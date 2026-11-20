@@ -214,6 +214,38 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
 .meter>div{height:100%;background:var(--lime);border-radius:5px}
 .sumbox.over .meter>div{background:var(--red)}
 form.locked{opacity:.6;pointer-events:none}
+.split.side{grid-template-columns:minmax(0,2.3fr) minmax(280px,1fr)}
+.split.side .maincol>.card:last-child{margin-bottom:0}
+@media (max-width:1100px){.split.side{grid-template-columns:1fr}.split.side .maincol>.card:last-child{margin-bottom:8px}}
+.rbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.rbar .hint{flex:1 1 260px}
+table.entry td{padding:4px 5px}
+table.entry td.in select,table.entry td.in input{padding:.4em .45em;font-size:14px}
+table.entry td.num input{width:62px}
+table.entry td.wide input{min-width:80px}
+table.entry td.in select{min-width:108px}
+table.entry td.in:nth-child(3) select{min-width:140px;max-width:170px}
+table.entry td.ck input{width:18px;height:18px}
+table.entry td.head{font-weight:700;white-space:nowrap}
+table.entry td.head input{min-width:110px;padding:.4em .45em;font-size:14px}
+table.entry td.auto{min-width:140px;font-size:12.5px;white-space:nowrap}
+table.entry tr.on td{background:#fafcf3}
+table.entry tr.bad td{background:#fdecec}
+table.entry tr.nobatch:not(.on) td{color:#888}
+@media (max-width:640px){
+  table.entry tr{grid-template-columns:1fr 1fr;position:relative;padding-left:36px}
+  table.entry td.ck{position:absolute;left:10px;top:10px;padding:0;width:auto!important;background:none!important}
+  table.entry td.in:nth-child(3){grid-column:1/-1}
+  table.entry td.in select{min-width:0!important;max-width:none!important}
+  table.entry tr.on{background:#fafcf3}table.entry tr.bad{background:#fdecec}
+  table.entry tr.on td,table.entry tr.bad td{background:none}
+  table.entry td.ck::before{display:none}
+  table.entry td.head,table.entry td.wide,table.entry td.auto{grid-column:1/-1}
+  table.entry td.in{flex-direction:column;align-items:stretch;gap:2px;text-align:left}
+  table.entry td.num input{width:100%}
+  table.entry td.auto{justify-content:flex-start;gap:8px;flex-wrap:wrap}
+  table.entry td.auto::before{align-self:center}
+}
 @media (max-width:560px){
   .tiles{grid-template-columns:1fr 1fr;gap:6px}
   .tile{padding:7px 8px;gap:3px}
@@ -288,37 +320,39 @@ form.locked{opacity:.6;pointer-events:none}
   <!-- ===== FARM REPORT ===== -->
   <section id="v-report" class="view">
     <div class="viewonly hidden" id="rViewOnly">👁 View only — Sup/Manager accounts can see the farm reports but cannot enter or change them.</div>
-    <div class="card">
-      <div class="chead">
-        <div><h2 class="title" style="margin:0">Buildings — current status</h2><div class="hint" id="bldCount"></div></div>
-        <div style="min-width:170px"><select id="rFarm" aria-label="Farm"></select></div>
-      </div>
-      <div class="tiles" id="bldTiles"></div>
-    </div>
-    <div class="split">
-      <div class="card" id="formCard">
-        <div class="chead"><h2 class="title" id="formTitle" style="margin:0">Farm report</h2></div>
-        <form id="rForm" autocomplete="off">
-          <div class="fgrid">
-            <div><label class="f">Report date <span class="req">*</span></label><input type="date" id="r_report_date" required></div>
-            <div><label class="f">Building <span class="req">*</span></label><select id="r_building" required></select><input id="r_building_new" class="hidden" placeholder="Type building name" style="margin-top:6px"></div>
-            <div class="s2"><label class="f">Breed / line <span class="req">*</span></label><select id="r_breed" required></select></div>
-            <div><label class="f">Ave. age (days) <span class="req">*</span></label><input type="number" inputmode="numeric" min="20" max="400" id="r_ave_age" required></div>
-            <div><label class="f">Weight range <span class="req">*</span></label><select id="r_wrange" required></select></div>
-            <div><label class="f">Good heads <span class="req">*</span></label><input type="number" inputmode="numeric" min="0" id="r_good" required></div>
-            <div><label class="f">Defective heads</label><input type="number" inputmode="numeric" min="0" id="r_defective" value="0"></div>
-            <div class="s4"><label class="f">Remarks</label><input id="r_remarks" placeholder="optional"></div>
+    <div class="split side">
+      <div class="maincol">
+        <div class="card" id="formCard">
+          <div class="chead">
+            <h2 class="title" style="margin:0">Farm report</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:150px"><label class="f">Farm</label><select id="rFarm" aria-label="Farm"></select></div>
+              <div style="min-width:150px"><label class="f">Report date <span class="req">*</span></label><input type="date" id="r_report_date" required></div>
+            </div>
           </div>
-          <div class="modenote new" id="rMode" style="margin-top:10px">Choose a building.</div>
-          <div class="autobox" id="rAuto" style="margin-top:8px"></div>
-          <div class="err" id="rErr" style="margin-top:6px"></div>
-          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-            <button class="btn primary lg" id="rSubmit" type="submit" style="flex:1 1 180px">Submit report</button>
-            <button class="btn lg" type="button" id="rClear">Clear</button>
-          </div>
-        </form>
+          <form id="rForm" autocomplete="off">
+            <div class="rbar">
+              <span class="hint">Buildings with a batch are filled in from the last report (age moved to the report date, heads less pull-outs). Tick or change a row to include it.</span>
+              <span style="display:flex;gap:6px;flex-wrap:wrap">
+                <button type="button" class="btn sm" id="rTickAll">☑ Tick all with batch</button>
+                <button type="button" class="btn sm" id="rUntick">☐ Untick all</button>
+                <button type="button" class="btn sm" id="rAddBld">+ Other building</button>
+              </span>
+            </div>
+            <div class="tablewrap rtw"><table class="rt entry" id="rGrid"></table></div>
+            <div class="err" id="rErr" style="margin-top:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+              <button class="btn primary lg" id="rSubmit" type="submit" style="flex:1 1 220px">Submit reports</button>
+              <button class="btn lg" type="button" id="rClear">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="chead"><div><h2 class="title" style="margin:0">Buildings — current status</h2><div class="hint" id="bldCount"></div></div></div>
+          <div class="tiles" id="bldTiles"></div>
+        </div>
       </div>
-      <div class="card">
+      <div class="card sidecol">
         <div class="chead"><h2 style="margin:0">Recent reports</h2><span class="hint" id="recentLab"></span></div>
         <div class="rlist" id="myReports"></div>
       </div>
@@ -556,6 +590,7 @@ const demo={
     const avail=(farm,bn,ex)=>{const reps=d.reports.filter(r=>!r.voided&&r.farm===farm&&r.building===bn).sort((x,y)=>(x.report_date+x.submitted_at).localeCompare(y.report_date+y.submitted_at));const last=reps[reps.length-1];if(!last||String(last.status||'ACTIVE')!=='ACTIVE')return{batch:false,avail:0};return{batch:true,avail:Math.max(0,(+last.good||0)+(+last.defective||0)-d.pullouts.filter(p=>!p.voided&&p.id!==ex&&p.farm===farm&&p.building===bn&&p.date>last.report_date).reduce((s,p)=>s+(+p.heads||0),0))}};
     if(fn==='data')return{ok:true,user:pub(u),reports:d.reports.filter(r=>!r.voided),pullouts:d.pullouts.filter(r=>!r.voided),snapshots:d.snapshots,breeds:d.breeds,farms:d.farms,rules:d.rules};
     if(fn==='submit'){const r=a.report,b=farmBad(r.farm);if(b)return{ok:false,error:b};if(!d.reports.some(x=>x.id===r.id))d.reports.push(Object.assign({},r,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
+    if(fn==='submitMany'){for(const r of a.reports){const b=farmBad(r.farm);if(b)return{ok:false,error:b}}const at=new Date().toISOString();a.reports.forEach(r=>{if(!d.reports.some(x=>x.id===r.id))d.reports.push(Object.assign({},r,{submitted_at:at,username:u.username,name:u.name}))});this.save(d);return{ok:true}}
     if(fn==='submitPullout'){const p=a.pullout,b=farmBad(p.farm);if(b)return{ok:false,error:b};if(d.pullouts.some(x=>x.id===p.id))return{ok:true};const iv=avail(p.farm,p.building);if(!iv.batch)return{ok:false,error:p.building+' has no active batch.'};if(p.heads>iv.avail)return{ok:false,error:'Pull-out ('+p.heads+' hd) is more than the inventory in '+p.building+' ('+iv.avail+' hd).'};if(!d.pullouts.some(x=>x.id===p.id))d.pullouts.push(Object.assign({},p,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
     if(fn==='void'){if(u.role!=='ADMIN')return{ok:false,error:'Only an admin can void entries.'};const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:true};r.voided=true;this.save(d);return{ok:true}}
     if(fn==='edit'){const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:false,error:'Entry not found.'};const b=farmBad(r.farm);if(b)return{ok:false,error:b};const n=Object.assign({},r,a.fields);if(a.sheet==='Pullouts'){n.heads=['h_u90','h_90_120','h_121_130','h_131'].reduce((s,k)=>s+(+n[k]||0),0);const iv=avail(r.farm,r.building,r.id);if(iv.batch&&n.heads>iv.avail)return{ok:false,error:'Pull-out ('+n.heads+' hd) is more than the inventory ('+iv.avail+' hd).'}}Object.assign(r,n,{edited_at:new Date().toISOString(),edited_by:u.username});this.save(d);return{ok:true}}
@@ -633,7 +668,8 @@ const canVoid=()=>role()==='ADMIN';
 function pendingOf(fn,key){return QUEUE.filter(q=>q.fn===fn).map(q=>Object.assign({},q.args[key],{_pending:true,username:ME().username,name:ME().name,submitted_at:q.at}))}
 function voidSet(sheet){return new Set(QUEUE.filter(q=>q.fn==='void'&&q.args.sheet===sheet).map(q=>q.args.id))}
 function withEdits(list,sheet){const ed=QUEUE.filter(q=>q.fn==='edit'&&q.args.sheet===sheet);if(!ed.length)return list;return list.map(r=>{const e=ed.filter(q=>q.args.id===r.id);if(!e.length)return r;const o=Object.assign({},r,{_pending:true});e.forEach(q=>Object.assign(o,q.args.fields));if(sheet==='Pullouts')o.heads=sum(BANDS,b=>+o[b.f]||0);return o})}
-function allReports(){const v=voidSet('Reports');return withEdits(DATA.reports.concat(pendingOf('submit','report')),'Reports').filter(r=>!v.has(r.id))}
+function pendingMany(){return QUEUE.filter(q=>q.fn==='submitMany').flatMap(q=>q.args.reports.map(r=>Object.assign({},r,{_pending:true,username:ME().username,name:ME().name,submitted_at:q.at})))}
+function allReports(){const v=voidSet('Reports');return withEdits(DATA.reports.concat(pendingOf('submit','report'),pendingMany()),'Reports').filter(r=>!v.has(r.id))}
 function allPullouts(){const v=voidSet('Pullouts');return withEdits(DATA.pullouts.concat(pendingOf('submitPullout','pullout')),'Pullouts').filter(r=>!v.has(r.id))}
 const bkey=r=>(r.farm||'')+'|'+String(r.building||'').trim();
 function latestByBuilding(){const m=new Map();allReports().forEach(r=>{const k=bkey(r),c=m.get(k);if(!c||r.report_date>c.report_date||(r.report_date===c.report_date&&String(r.submitted_at)>String(c.submitted_at)))m.set(k,r)});return[...m.values()]}
@@ -722,23 +758,83 @@ function fillSel(sel,list,cur,allLabel){const s=typeof sel==='string'?$(sel):sel
 function fillFilters(){$$('.fFarm').forEach(s=>fillSel(s,farmNames(),UI.fFarm));$$('.fBreed').forEach(s=>fillSel(s,breedNames(),UI.fBreed))}
 function kpi(box,k,v,n,cls){const d=el('div',{class:'kpi '+(cls||'')});d.append(el('div',{class:'k'},k),el('div',{class:'v'},v),el('div',{class:'n'},n||''));box.append(d)}
 
-/* ---------- FARM REPORT ---------- */
+/* ---------- FARM REPORT (multi-building) ---------- */
 function availFor(farm,bn,excludeId){
   const b=activeBatches().find(x=>x.farm===farm&&String(x.building).trim()===String(bn).trim());
   if(!b)return{b:null,avail:0};
   const pulled=sum(allPullouts().filter(p=>p.id!==excludeId&&p.farm===farm&&String(p.building).trim()===String(bn).trim()&&p.date>b.report_date),p=>p.heads);
   return{b,avail:Math.max(0,(+b.good||0)+(+b.defective||0)-pulled)};
 }
-function lockForm(formId,bannerId){const ro=!canEnter();$(formId).classList.toggle('locked',ro);$(bannerId).classList.toggle('hidden',!ro);$$('#'+formId+' input,#'+formId+' select,#'+formId+' button').forEach(x=>{if(ro)x.disabled=true})}
+function lockForm(formId,bannerId){const ro=!canEnter();$(formId).classList.toggle('locked',ro);$(bannerId).classList.toggle('hidden',!ro);$$('#'+formId+' input,#'+formId+' select,#'+formId+' button').forEach(x=>{if(ro)x.disabled=true});if(formId==='rForm'){$('r_report_date').disabled=ro}}
+let RROWS=null,RKEY='';
+function rowFromBatch(bn,date){
+  const b=activeBatches().find(x=>x.farm===UI.rFarm&&String(x.building).trim()===bn);
+  const r={building:bn,include:false,base:b||null,breed:'',age:'',wr:'',good:'',def:0,remarks:''};
+  if(b){const T=pd(date),days=Math.max(0,Math.round((T-pd(b.report_date))/DAY));
+    const pulled=sum(allPullouts().filter(p=>p.farm===b.farm&&String(p.building).trim()===bn&&p.date>b.report_date&&p.date<=date),p=>p.heads);
+    const M=model(b,date),s=M.at(T);let wi=WR.findIndex(x=>s.mean>=x.a&&s.mean<=x.b+0.99);if(wi<0)wi=wrIndex(b.wmin,b.wmax);
+    Object.assign(r,{breed:b.breed,age:(+b.ave_age||0)+days,wr:wi>=0?String(wi):'',good:Math.max(0,(+b.good||0)-pulled),def:+b.defective||0})}
+  return r;
+}
+function buildRows(force){
+  const date=$('r_report_date').value||todayYmd(),key=UI.rFarm+'|'+date;
+  const blds=buildingsOf(UI.rFarm);
+  if(force||!RROWS||RKEY!==key){const old=RKEY.split('|')[0]===UI.rFarm&&RROWS?RROWS.filter(r=>r.extra):[];RROWS=blds.map(bn=>rowFromBatch(bn,date)).concat(old.filter(o=>!blds.includes(o.building)));RKEY=key;return}
+  blds.forEach(bn=>{if(!RROWS.some(r=>r.building===bn))RROWS.push(rowFromBatch(bn,date))});
+  RROWS.forEach(r=>{if(!r.include&&!r.extra){const f=rowFromBatch(r.building,date);Object.assign(r,f)}});
+}
+function rowVals(r){const w=r.wr===''?null:WR[+r.wr];return{report_date:$('r_report_date').value,building:String(r.building||'').trim(),breed:r.breed,ave_age:r.age===''?'':+r.age,good:r.good===''?'':+r.good,defective:+r.def||0,wmin:w?w.a:'',wmax:w?w.b:'',remarks:String(r.remarks||'').trim()}}
+function rowCheck(r){return validate(rowVals(r),!!r.base)}
 function renderReport(){
   const farms=myFarms();if(!farms.includes(UI.rFarm))UI.rFarm=farms[0]||'';
   fillSel('rFarm',farms,UI.rFarm,null);$('rFarm').disabled=farms.length<2;
-  const curB=$('r_building').value;
-  fillSel('r_building',[{v:'',t:'— choose —'}].concat(buildingsOf(UI.rFarm).map(b=>({v:b,t:b}))).concat(canEnter()?[{v:'__new',t:'➕ Other building…'}]:[]),curB,null);
-  fillSel('r_breed',[{v:'',t:'— choose —'}].concat(breedNames().map(b=>({v:b,t:b}))),$('r_breed').value,null);
-  fillSel('r_wrange',[{v:'',t:'— choose —'}].concat(WR.map((r,i)=>({v:i,t:r.label}))),$('r_wrange').value,null);
   if(!$('r_report_date').value)$('r_report_date').value=todayYmd();
-  renderBuildings();renderMyReports();updateAuto();lockForm('rForm','rViewOnly');
+  buildRows(false);renderGrid();renderBuildings();renderMyReports();lockForm('rForm','rViewOnly');
+}
+function renderGrid(){
+  const t=$('rGrid');t.replaceChildren();
+  thead(t,['','Building','Breed / line','Ave. age (d)','Weight range','Good hd','Def. hd','Remarks','Sale · status']);
+  const tb=el('tbody');
+  if(!RROWS.length)empty(tb,9,'No buildings set up for this farm. Admin adds them in Settings, or use "+ Other building".');
+  RROWS.forEach((r,i)=>{
+    const tr=el('tr',{id:'rrow_'+i,class:(r.include?'on':'')+(r.base?'':' nobatch')});
+    const ck=el('input',{type:'checkbox','aria-label':'Include '+r.building});ck.checked=r.include;ck.onchange=()=>{r.include=ck.checked;rowUpd(i)};
+    const c0=cellTd(tr,'Include',ck,'ck');
+    let bn;if(r.extra){bn=el('input',{placeholder:'Building name'});bn.value=r.building;bn.oninput=()=>{r.building=bn.value;mark(i)}}else bn=el('span',null,r.building);
+    const hd=el('span',{class:'bh'});hd.append(bn);if(!r.base&&!r.extra)hd.append(el('span',{class:'badge b-grow',style:'margin-left:6px'},'Empty'));if(r.base&&r.base._pending)hd.append(el('span',{class:'badge b-pend',style:'margin-left:6px'},'not synced'));
+    cellTd(tr,'',hd,'head');
+    const br=el('select');fillSel(br,[{v:'',t:'—'}].concat(breedNames().map(x=>({v:x,t:x}))),r.breed,null);br.onchange=()=>{r.breed=br.value;mark(i)};cellTd(tr,'Breed',br,'in');
+    const ag=el('input',{type:'number',inputmode:'numeric',min:'20',max:'400'});ag.value=r.age;ag.oninput=()=>{r.age=ag.value;mark(i)};cellTd(tr,'Age (d)',ag,'in num');
+    const wr=el('select');fillSel(wr,[{v:'',t:'—'}].concat(WR.map((x,j)=>({v:String(j),t:x.label}))),r.wr,null);wr.onchange=()=>{r.wr=wr.value;mark(i)};cellTd(tr,'Weight',wr,'in');
+    const gd=el('input',{type:'number',inputmode:'numeric',min:'0'});gd.value=r.good;gd.oninput=()=>{r.good=gd.value;mark(i)};cellTd(tr,'Good hd',gd,'in num');
+    const df=el('input',{type:'number',inputmode:'numeric',min:'0'});df.value=r.def;df.oninput=()=>{r.def=df.value;mark(i)};cellTd(tr,'Def. hd',df,'in num');
+    const rm=el('input',{placeholder:'—'});rm.value=r.remarks;rm.oninput=()=>{r.remarks=rm.value;mark(i)};cellTd(tr,'Remarks',rm,'in wide');
+    cellTd(tr,'Sale · status',el('span',{id:'rauto_'+i}),'auto');
+    tb.append(tr)});
+  t.append(tb);RROWS.forEach((r,i)=>rowUpd(i));
+}
+function mark(i){const r=RROWS[i];r.include=true;const ck=document.querySelector('#rrow_'+i+' input[type=checkbox]');if(ck)ck.checked=true;rowUpd(i)}
+function rowUpd(i){
+  const r=RROWS[i],tr=$('rrow_'+i),box=$('rauto_'+i);if(!tr||!box)return;
+  tr.classList.toggle('on',r.include);box.replaceChildren();
+  const v=rowVals(r),err=r.include?rowCheck(r):'';tr.classList.toggle('bad',!!err);tr.title=err;
+  if(err){box.append(el('span',{class:'err',style:'font-size:12px'},err))}
+  else if(v.ave_age!==''&&v.wmin!==''&&v.breed&&v.report_date){const M=model(Object.assign({farm:UI.rFarm},v),v.report_date),st=statusAt(M,pd(v.report_date));box.append(el('span',{style:'font-weight:700'},nice(M.natural)+' '),el('span',{class:'badge '+st.cls},st.t))}
+  else box.append(el('span',{class:'hint'},'—'));
+  updCount();
+}
+function updCount(){const inc=RROWS?RROWS.filter(r=>r.include):[],bad=inc.filter(r=>rowCheck(r)).length;const b=$('rSubmit');b.textContent=inc.length?'Submit '+inc.length+' report'+(inc.length>1?'s':''):'Submit reports';b.disabled=!canEnter()||!inc.length;$('rErr').textContent=bad?bad+' ticked row'+(bad>1?'s have':' has')+' a problem — see the red row'+(bad>1?'s':'')+'.':''}
+function submitGrid(){
+  if(!canEnter())return;const date=$('r_report_date').value;
+  if(!date||pd(date)>pd(todayYmd())){$('rErr').textContent='Check the report date (cannot be in the future).';return}
+  const inc=RROWS.filter(r=>r.include);if(!inc.length){$('rErr').textContent='Tick at least one building.';return}
+  const bad=inc.map(r=>[r,rowCheck(r)]).filter(x=>x[1]);
+  if(bad.length){$('rErr').textContent=bad.map(([r,e])=>(r.building||'New building')+': '+e).join(' · ');const i=RROWS.indexOf(bad[0][0]);const tr=$('rrow_'+i);if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'});return}
+  const names=inc.map(r=>String(r.building).trim().toLowerCase());if(new Set(names).size!==names.length){$('rErr').textContent='The same building appears twice.';return}
+  const reports=inc.map(r=>{const v=rowVals(r),M=model(Object.assign({farm:UI.rFarm},v),date);return Object.assign({id:uid(),farm:UI.rFarm,batch:'',status:'ACTIVE',planned_sale:ymd(M.natural)},v)});
+  queuePush('submitMany',{reports});
+  toast(reports.length+' report'+(reports.length>1?'s':'')+(navigator.onLine?' sent ✓':' saved on this device — will send when online'));
+  RROWS=null;renderReport();window.scrollTo({top:0,behavior:'smooth'});
 }
 function tileFor(bn,farm,opts){
   const T=pd(todayYmd()),{b,avail}=availFor(farm,bn);
@@ -760,46 +856,20 @@ function tileFor(bn,farm,opts){
 }
 function renderBuildings(){
   const box=$('bldTiles');box.replaceChildren();const blds=buildingsOf(UI.rFarm);
-  if(!blds.length)box.append(el('div',{class:'hint'},'No buildings set up for this farm yet. An admin adds them in Settings'+(canEnter()?', or choose "Other building…" in the form below.':'.')));
+  if(!blds.length)box.append(el('div',{class:'hint'},'No buildings set up for this farm yet.'));
   let n=0,h=0;blds.forEach(bn=>{const {b,avail}=availFor(UI.rFarm,bn);if(b){n++;h+=avail}box.append(tileFor(bn,UI.rFarm,{actions:true}))});
   $('bldCount').textContent=UI.rFarm+' · '+n+' active of '+blds.length+' buildings · '+fmt(h)+' heads';
 }
-function pickBuilding(bn){if(!canEnter())return;$('r_building').value=bn;$('r_building_new').classList.add('hidden');onBuildingChange();$('formCard').scrollIntoView({behavior:'smooth',block:'start'})}
-function curBuilding(){const v=$('r_building').value;return v==='__new'?$('r_building_new').value.trim():v}
-function onBuildingChange(){
-  const v=$('r_building').value;$('r_building_new').classList.toggle('hidden',v!=='__new');if(v==='__new')$('r_building_new').focus();
-  const bn=curBuilding(),b=activeBatches().find(x=>x.farm===UI.rFarm&&String(x.building).trim()===bn);
-  UI.edit=b||null;
-  if(b){const days=Math.max(0,Math.round((pd($('r_report_date').value||todayYmd())-pd(b.report_date))/DAY));
-    const pulled=sum(allPullouts().filter(p=>p.farm===b.farm&&String(p.building).trim()===bn&&p.date>b.report_date),p=>p.heads);
-    const good=Math.max(0,(+b.good||0)-pulled),def=+b.defective||0;
-    $('r_breed').value=b.breed;$('r_ave_age').value=(+b.ave_age||0)+days;$('r_good').value=good;$('r_defective').value=def;
-    const M=model(b,todayYmd()),s=M.at(pd(todayYmd()));let wi=WR.findIndex(r=>s.mean>=r.a&&s.mean<=r.b+0.99);if(wi<0)wi=wrIndex(b.wmin,b.wmax);$('r_wrange').value=wi>=0?wi:'';$('r_remarks').value='';
-  }else{['r_ave_age','r_good','r_remarks'].forEach(id=>$(id).value='');$('r_defective').value=0;$('r_wrange').value=''}
-  $('formTitle').textContent=b?'Update '+bn:'Farm report';updateAuto();
-}
-function formVals(){const wi=$('r_wrange').value,r=wi===''?null:WR[+wi];const n=id=>$(id).value===''?'':+$(id).value;
-  return{report_date:$('r_report_date').value,building:curBuilding(),breed:$('r_breed').value,ave_age:n('r_ave_age'),good:n('r_good'),defective:n('r_defective')||0,wmin:r?r.a:'',wmax:r?r.b:'',remarks:$('r_remarks').value.trim()}}
+function pickBuilding(bn){if(!canEnter())return;const i=RROWS.findIndex(r=>r.building===bn);if(i<0)return;RROWS[i].include=true;const ck=document.querySelector('#rrow_'+i+' input[type=checkbox]');if(ck)ck.checked=true;rowUpd(i);const tr=$('rrow_'+i);tr.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const g=tr.querySelectorAll('input[type=number]')[1];if(g)g.focus()},350)}
 function validate(v,isUpdate){
   if(!UI.rFarm)return'Choose a farm.';if(!v.report_date)return'Enter the report date.';
   if(pd(v.report_date)>pd(todayYmd()))return'Report date cannot be in the future.';
-  if(!v.building)return'Choose the building.';if(!v.breed)return'Choose the breed / line.';
-  if(v.ave_age===''||v.ave_age<20||v.ave_age>400)return'Average age looks wrong (20–400 days).';
+  if(!v.building)return'Enter the building.';if(!v.breed)return'Choose the breed.';
+  if(v.ave_age===''||v.ave_age<20||v.ave_age>400)return'Age 20–400 days.';
   if(v.wmin==='')return'Choose the weight range.';
   if(v.good===''||v.good<0)return'Enter good heads.';
-  if(!isUpdate&&!(v.good>0))return'A new batch needs at least 1 good head.';
+  if(!isUpdate&&!(v.good>0))return'New batch needs good heads.';
   return'';
-}
-function updateAuto(){
-  const v=formVals(),box=$('rAuto'),mode=$('rMode');box.replaceChildren();
-  if(UI.edit){mode.className='modenote';mode.textContent='Updating '+v.building+' — last report '+niceY(pd(UI.edit.report_date))+(UI.edit.name?' by '+UI.edit.name:'')+'. Age moved up to today; heads less pull-outs since then.'}
-  else{mode.className='modenote new';mode.textContent=v.building?'New batch in '+v.building+'.':'Choose a building, or tap Update on a building above.'}
-  const R=rules();
-  if(v.ave_age===''||v.wmin===''||!v.breed||!v.report_date){box.append(el('span',{class:'hint'},'Planned sale date fills in automatically (target '+R.targetAge+' d, flag at '+R.flagAge+' d, or when avg weight ≥ '+R.saleWeight+' kg).'));return}
-  const M=model(Object.assign({farm:UI.rFarm},v),todayYmd()),T=pd(todayYmd()),st=statusAt(M,T);
-  const item=(lab,val)=>{const d=el('div');d.append(el('div',{class:'lab'},lab),el('div',{style:'font-weight:700'},val));box.append(d)};
-  item('Planned sale date',niceY(M.natural));item('Reason',M.byWeight?'Avg weight reaches '+R.saleWeight+' kg':'Reaches '+R.targetAge+' days');item('Flag date ('+R.flagAge+' d)',niceY(M.flagDate));
-  const s=document.createElement('div');s.append(el('div',{class:'lab'},'Status today'),el('span',{class:'badge '+st.cls},st.t));box.append(s);
 }
 function queuePush(fn,args,label){QUEUE.push({id:uid(),fn,args,at:new Date().toISOString(),label});ls.set('queue',QUEUE);renderPend();flush(true)}
 function closeBatch(b){
@@ -1293,15 +1363,13 @@ function bind(){
   $('btnMenu').onclick=menu;$('pendGo').onclick=()=>flush(false);
   $$('[data-fs]').forEach(b=>b.onclick=()=>{const d=+b.dataset.fs;FS=d===0?1:Math.max(.85,Math.min(1.3,FS+d*.1));document.documentElement.style.setProperty('--fs',FS);ls.set('fs',FS);renderView()});
   // report
-  $('rFarm').onchange=e=>{UI.rFarm=e.target.value;$('r_building').value='';clearForm();renderReport()};
-  $('r_building').onchange=onBuildingChange;$('r_building_new').oninput=()=>{UI.edit=null;updateAuto()};
-  $('r_report_date').onchange=()=>{if(UI.edit)onBuildingChange();else updateAuto()};
-  ['r_breed','r_ave_age','r_wrange','r_good','r_defective'].forEach(id=>$(id).addEventListener('input',updateAuto));
-  $('rClear').onclick=()=>{$('r_building').value='';clearForm();updateAuto()};
-  $('rForm').addEventListener('submit',e=>{e.preventDefault();if(!canEnter())return;const v=formVals(),bad=validate(v,!!UI.edit);$('rErr').textContent=bad;if(bad)return;
-    const M=model(Object.assign({farm:UI.rFarm},v),todayYmd());
-    queuePush('submit',{report:Object.assign({id:uid(),farm:UI.rFarm,batch:'',status:'ACTIVE',planned_sale:ymd(M.natural)},v)});
-    toast(navigator.onLine?'Report sent ✓':'Saved on this device — will send when online');$('r_building').value='';clearForm();renderReport();window.scrollTo({top:0,behavior:'smooth'})});
+  $('rFarm').onchange=e=>{UI.rFarm=e.target.value;RROWS=null;renderReport()};
+  $('r_report_date').onchange=()=>{RROWS=null;renderReport()};
+  $('rTickAll').onclick=()=>{RROWS.forEach(r=>{if(r.base)r.include=true});renderGrid()};
+  $('rUntick').onclick=()=>{RROWS.forEach(r=>r.include=false);renderGrid()};
+  $('rAddBld').onclick=()=>{RROWS.push({building:'',include:true,extra:true,base:null,breed:'',age:'',wr:'',good:'',def:0,remarks:''});renderGrid();const ins=$$('#rGrid tr.nobatch input:not([type=checkbox])');const last=[...$$('#rGrid tbody tr')].pop();if(last){last.scrollIntoView({behavior:'smooth',block:'center'});const i=last.querySelector('td.head input');if(i)i.focus()}};
+  $('rClear').onclick=()=>{RROWS=null;renderReport()};
+  $('rForm').addEventListener('submit',e=>{e.preventDefault();submitGrid()});
   // pull-out
   $('pFarm').onchange=e=>{UI.pFarm=e.target.value;UI.pBld='';renderPullout()};
   $$('#pType .type').forEach(b=>b.onclick=()=>{UI.pType=b.dataset.t;renderPullout()});
@@ -1335,7 +1403,6 @@ function bind(){
   let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(UI.view==='forecast')renderForecast();if(UI.view==='analysis')drawAChart(analysisData().rows)},150)});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SESSION){flush(true);if(Date.now()-ls.get('cacheAt',0)>5*60e3)load(true)}});
 }
-function clearForm(){UI.edit=null;$('r_building_new').value='';$('r_building_new').classList.add('hidden');['r_ave_age','r_good','r_remarks'].forEach(id=>$(id).value='');$('r_defective').value=0;$('r_wrange').value='';$('r_breed').value='';$('r_report_date').value=todayYmd();$('rErr').textContent='';$('formTitle').textContent='Farm report'}
 function startApp(){
   $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
   UI.view=ls.get('view',canEnter()?'report':'forecast');if(!VIEWS.some(v=>v.k===UI.view&&v.roles.includes(role())))UI.view=canEnter()?'report':'forecast';
