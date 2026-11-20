@@ -213,6 +213,11 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
 .meter{height:10px;background:#e6e6e6;border-radius:5px;overflow:hidden;margin-top:8px}
 .meter>div{height:100%;background:var(--lime);border-radius:5px}
 .sumbox.over .meter>div{background:var(--red)}
+.sumbox.warn{border-color:var(--amber);background:#fff7e6}.sumbox.warn .meter>div{background:var(--amber)}
+.ovnote{margin-top:8px;font-weight:700;color:#8a4b00;font-size:calc(12.5px * var(--fs))}
+.ovr{display:flex;gap:6px 12px;flex-wrap:wrap;align-items:center;background:#fff7e6;border:1px dashed var(--amber);border-radius:3px;padding:7px 10px;margin:0 0 8px;font-size:calc(13px * var(--fs))}
+.ovr label{display:flex;gap:6px;align-items:center;cursor:pointer}.ovr label input{width:auto}
+.ovr>input{flex:1 1 220px}
 form.locked{opacity:.6;pointer-events:none}
 .split.side{grid-template-columns:minmax(0,2.3fr) minmax(280px,1fr)}
 .split.side .maincol>.card:last-child{margin-bottom:0}
@@ -230,11 +235,16 @@ table.entry td.head{font-weight:700;white-space:nowrap}
 table.entry td.head input{min-width:110px;padding:.4em .45em;font-size:14px}
 table.entry td.auto{min-width:140px;font-size:12.5px;white-space:nowrap}
 table.entry tr.on td{background:#fafcf3}
+.rx{border:1px solid var(--line2);background:#fff;color:var(--red);border-radius:3px;width:30px;height:30px;cursor:pointer;font-weight:700}
+.rx:hover{background:#fdecec;border-color:var(--red)}
+table.entry td.xc{width:36px}
 table.entry tr.bad td{background:#fdecec}
 table.entry tr.nobatch:not(.on) td{color:#888}
 @media (max-width:640px){
   table.entry tr{grid-template-columns:1fr 1fr;position:relative;padding-left:36px}
   table.entry td.ck{position:absolute;left:10px;top:10px;padding:0;width:auto!important;background:none!important}
+  table.entry td.xc{position:absolute;right:8px;top:6px;padding:0;width:auto!important;background:none!important}
+  table.entry td.xc::before{display:none}
   table.entry td.in:nth-child(3){grid-column:1/-1}
   table.entry td.in select{min-width:0!important;max-width:none!important}
   table.entry tr.on{background:#fafcf3}table.entry tr.bad{background:#fdecec}
@@ -275,7 +285,60 @@ table.entry tr.nobatch:not(.on) td{color:#888}
 .toast.bad{background:#fdecec;color:#8a1616;border:2px solid #c62828}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid #b9cdf5;border-top-color:#1f4fa8;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-1px}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media print{header.top,nav.bottom,.pendbar,.demobar,.noprint{display:none!important}main{padding:0}}
+
+/* ===== app shell: page does not scroll; panels scroll inside ===== */
+html,body{height:100%}
+body.app{overflow:hidden}
+#appView{height:100vh;height:100dvh;display:flex;flex-direction:column}
+#appView>header.top,#appView>.demobar,#appView>.pendbar{flex:0 0 auto}
+#appView>main{flex:1 1 auto;min-height:0;overflow:auto;max-width:none;width:100%;-webkit-overflow-scrolling:touch}
+#appView>main>.view{max-width:1440px;margin:0 auto}
+@media (min-width:1101px){
+  #v-report:not(.hidden),#v-pullout:not(.hidden){height:100%;display:flex;flex-direction:column}
+  #v-report>.split,#v-pullout>.split{flex:1 1 auto;min-height:0;align-items:stretch}
+  .split.side .maincol{display:flex;flex-direction:column;gap:12px;min-height:0}
+  .split.side .maincol>.card{margin:0}
+  #formCard{flex:0 1 auto;max-height:58%;display:flex;flex-direction:column;min-height:0}
+  #formCard>.chead{flex:0 0 auto}
+  #rForm{display:flex;flex-direction:column;min-height:0;flex:1 1 auto}
+  #rForm>.rbar,#rForm>.err,#rForm>div:last-child{flex:0 0 auto}
+  #rForm>.tablewrap{flex:1 1 auto;min-height:120px;max-height:none;overflow:auto}
+  #bldCard{flex:1 1 0;min-height:180px;display:flex;flex-direction:column}
+  #bldCard>.chead{flex:0 0 auto}
+  #bldTiles{flex:1 1 auto;min-height:0;overflow:auto;align-content:start;padding:2px}
+  .card.sidecol,.split.wide-left>.card{margin:0;display:flex;flex-direction:column;min-height:0}
+  .card.sidecol>.chead{flex:0 0 auto}
+  .card.sidecol>.rlist,#pList{flex:1 1 auto;min-height:0;max-height:none;overflow:auto}
+  .split.wide-left>.card:first-child{overflow:auto}
+  .split.wide-left>.card:last-child>.chead,.split.wide-left>.card:last-child>.kpis{flex:0 0 auto}
+}
+/* weight band summary */
+.atabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.atabs button{flex:0 1 auto;border:1px solid var(--line2);background:#fff;border-radius:3px;padding:.55em 1.1em;font-weight:700;font-size:calc(13.5px * var(--fs));cursor:pointer}
+.atabs button.on{background:var(--black);border-color:var(--black);color:var(--lime)}
+@media (max-width:560px){.atabs button{flex:1 1 40%;padding:.55em .5em;font-size:12.5px}}
+.wbbar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:0 0 12px;background:var(--line)}
+.wbbar div{height:100%}
+.wbtabs{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.pills{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pills button{border:1px solid var(--line2);background:#fff;color:var(--ink);padding:6px 13px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:calc(13px * var(--fs))}
+.pills button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+table.wbt{min-width:760px}
+table.wbt td{white-space:nowrap}
+table.wbt td.tb{font-weight:700}
+table.wbt tr.kid{cursor:pointer}table.wbt tr.kid:hover td{background:#fafcf3}
+table.wbt tr.lv0 td{font-weight:700}
+table.wbt tr.lv1 td:first-child{padding-left:30px}table.wbt tr.lv1 td{font-weight:600}
+table.wbt tr.lv2 td:first-child{padding-left:52px}
+table.wbt tr.lv3 td:first-child{padding-left:74px;color:var(--muted)}
+table.wbt tr.tot td{font-weight:800;border-top:2px solid var(--ink);background:#f4f7ea}
+table.wbt tr.sub td{color:var(--muted);font-size:calc(12px * var(--fs))}
+table.wbt .tg{display:inline-block;width:16px;color:var(--olive)}
+table.wbt .cnt{color:var(--muted2);font-weight:400;font-size:11px;margin-left:4px}
+table.wbt .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.wbnotes{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:calc(12.5px * var(--fs))}
+.wbnotes li{margin:3px 0}
+@media print{header.top,nav.bottom,.pendbar,.demobar,.noprint{display:none!important}main{padding:0}body.app{overflow:visible}#appView{height:auto}#appView>main{overflow:visible}}
 </style>
 </head>
 <body>
@@ -316,7 +379,7 @@ table.entry tr.nobatch:not(.on) td{color:#888}
 <div class="demobar hidden" id="demoBar">Demo mode — sample data saved on this device only.</div>
 <div class="pendbar hidden" id="pendBar"><span id="pendTxt"></span><button id="pendGo">Send now</button></div>
 
-<main>
+<main id="mainEl">
   <!-- ===== FARM REPORT ===== -->
   <section id="v-report" class="view">
     <div class="viewonly hidden" id="rViewOnly">👁 View only — Sup/Manager accounts can see the farm reports but cannot enter or change them.</div>
@@ -347,7 +410,7 @@ table.entry tr.nobatch:not(.on) td{color:#888}
             </div>
           </form>
         </div>
-        <div class="card">
+        <div class="card" id="bldCard">
           <div class="chead"><div><h2 class="title" style="margin:0">Buildings — current status</h2><div class="hint" id="bldCount"></div></div></div>
           <div class="tiles" id="bldTiles"></div>
         </div>
@@ -374,6 +437,7 @@ table.entry tr.nobatch:not(.on) td{color:#888}
             <button type="button" class="type mort" data-t="MORTALITY"><span class="ti">✖</span>Mortality</button>
           </div>
           <div class="step"><span class="num">2</span>Building <span class="hint" style="font-weight:400;margin-left:6px">tap one with live hogs</span></div>
+          <div class="ovr hidden" id="pOvrBox"><label><input type="checkbox" id="pOvr"> <b>Admin override</b> — allow an empty building or more heads than the inventory</label><input id="pOvrReason" class="hidden" placeholder="Reason for override (required)"></div>
           <div class="tiles pick" id="pTiles"></div>
           <input type="hidden" id="p_building">
           <div class="step"><span class="num">3</span>Details</div>
@@ -450,16 +514,22 @@ table.entry tr.nobatch:not(.on) td{color:#888}
 
   <!-- ===== ANALYSIS ===== -->
   <section id="v-analysis" class="view hidden">
+    <div class="atabs" id="aMode">
+      <button type="button" data-a="fvp" class="on">📊 Forecast vs. pull-out</button>
+      <button type="button" data-a="wb">⚖️ Weight band summary</button>
+    </div>
     <div class="toolbar">
       <div><label class="f">From</label><input type="date" id="aFrom"></div>
       <div><label class="f">To</label><input type="date" id="aTo"></div>
       <div><label class="f">Farm</label><select id="aFarm"></select></div>
-      <div><label class="f">Weight category</label><select id="aBand"></select></div>
-      <div class="grow"><label class="f">Forecast baseline</label><select id="aBase"></select></div>
+      <div class="fvpOnly"><label class="f">Weight category</label><select id="aBand"></select></div>
+      <div class="grow fvpOnly"><label class="f">Forecast baseline</label><select id="aBase"></select></div>
+      <div class="grow wbOnly hidden"><label class="f">Customer / destination</label><select id="aCust"></select></div>
     </div>
     <div class="card" style="padding:10px 14px">
       <div class="checks" id="aTypes"><span class="hint" style="font-weight:700">Count as pull-out:</span></div>
     </div>
+    <div id="aFvp">
     <div class="kpis" id="aKpis"></div>
     <div class="card">
       <div class="chead"><h2 class="title" style="margin:0">Forecast vs. pull-out by week</h2><button class="btn xl sm noprint" id="xlAnalysis">⬇ Download Excel</button></div>
@@ -470,6 +540,20 @@ table.entry tr.nobatch:not(.on) td{color:#888}
     <div class="row2">
       <div class="card"><h2>By weight category</h2><div class="tablewrap"><table id="aByBand"></table></div></div>
       <div class="card"><h2>By farm</h2><div class="tablewrap"><table id="aByFarm"></table></div></div>
+    </div>
+    </div>
+    <div id="aWb" class="hidden">
+      <div class="card" style="padding:12px 16px">
+        <div class="chead" style="margin-bottom:4px"><div><h2 class="title" style="margin:0" id="wbTitle">Hog Weight Band Summary</h2><div class="hint" id="wbSub"></div></div><button class="btn xl sm noprint" id="xlWb">⬇ Download Excel</button></div>
+      </div>
+      <div class="kpis" id="wbKpis"></div>
+      <div class="wbbar" id="wbBar"></div>
+      <div class="wbtabs">
+        <div class="pills" id="wbView"><button type="button" data-v="band" class="on">Weight bands</button><button type="button" data-v="cust">By farm &amp; customer</button><button type="button" data-v="date">By date</button></div>
+        <div class="pills" id="wbTools"><span class="hint">Show</span><button type="button" data-m="hd" class="on">Heads + kg</button><button type="button" data-m="pct">% of heads</button><button type="button" id="wbExp">Expand all</button><button type="button" id="wbCol">Collapse all</button></div>
+      </div>
+      <div class="card" style="padding:0"><div class="tablewrap" style="border:0"><table class="wbt" id="wbTbl"></table></div></div>
+      <ul class="wbnotes" id="wbNotes"></ul>
     </div>
   </section>
 
@@ -591,9 +675,9 @@ const demo={
     if(fn==='data')return{ok:true,user:pub(u),reports:d.reports.filter(r=>!r.voided),pullouts:d.pullouts.filter(r=>!r.voided),snapshots:d.snapshots,breeds:d.breeds,farms:d.farms,rules:d.rules};
     if(fn==='submit'){const r=a.report,b=farmBad(r.farm);if(b)return{ok:false,error:b};if(!d.reports.some(x=>x.id===r.id))d.reports.push(Object.assign({},r,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
     if(fn==='submitMany'){for(const r of a.reports){const b=farmBad(r.farm);if(b)return{ok:false,error:b}}const at=new Date().toISOString();a.reports.forEach(r=>{if(!d.reports.some(x=>x.id===r.id))d.reports.push(Object.assign({},r,{submitted_at:at,username:u.username,name:u.name}))});this.save(d);return{ok:true}}
-    if(fn==='submitPullout'){const p=a.pullout,b=farmBad(p.farm);if(b)return{ok:false,error:b};if(d.pullouts.some(x=>x.id===p.id))return{ok:true};const iv=avail(p.farm,p.building);if(!iv.batch)return{ok:false,error:p.building+' has no active batch.'};if(p.heads>iv.avail)return{ok:false,error:'Pull-out ('+p.heads+' hd) is more than the inventory in '+p.building+' ('+iv.avail+' hd).'};if(!d.pullouts.some(x=>x.id===p.id))d.pullouts.push(Object.assign({},p,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
+    if(fn==='submitPullout'){const p=a.pullout,b=farmBad(p.farm);if(b)return{ok:false,error:b};if(d.pullouts.some(x=>x.id===p.id))return{ok:true};const iv=avail(p.farm,p.building);const ex=!iv.batch||p.heads>iv.avail;if(ex){if(u.role!=='ADMIN'||!p.override){if(!iv.batch)return{ok:false,error:p.building+' has no active batch.'};return{ok:false,error:'Pull-out ('+p.heads+' hd) is more than the inventory in '+p.building+' ('+iv.avail+' hd).'}}if(!String(p.override_reason||'').trim())return{ok:false,error:'Admin override needs a reason.'};p.remarks='[ADMIN OVERRIDE: '+p.override_reason+' · inventory '+(iv.batch?iv.avail:0)+' hd] '+(p.remarks||'')}if(!d.pullouts.some(x=>x.id===p.id))d.pullouts.push(Object.assign({},p,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
     if(fn==='void'){if(u.role!=='ADMIN')return{ok:false,error:'Only an admin can void entries.'};const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:true};r.voided=true;this.save(d);return{ok:true}}
-    if(fn==='edit'){const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:false,error:'Entry not found.'};const b=farmBad(r.farm);if(b)return{ok:false,error:b};const n=Object.assign({},r,a.fields);if(a.sheet==='Pullouts'){n.heads=['h_u90','h_90_120','h_121_130','h_131'].reduce((s,k)=>s+(+n[k]||0),0);const iv=avail(r.farm,r.building,r.id);if(iv.batch&&n.heads>iv.avail)return{ok:false,error:'Pull-out ('+n.heads+' hd) is more than the inventory ('+iv.avail+' hd).'}}Object.assign(r,n,{edited_at:new Date().toISOString(),edited_by:u.username});this.save(d);return{ok:true}}
+    if(fn==='edit'){const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:false,error:'Entry not found.'};const b=farmBad(r.farm);if(b)return{ok:false,error:b};const n=Object.assign({},r,a.fields);if(a.sheet==='Pullouts'){n.heads=['h_u90','h_90_120','h_121_130','h_131'].reduce((s,k)=>s+(+n[k]||0),0);const iv=avail(r.farm,r.building,r.id);if(iv.batch&&n.heads>iv.avail){if(u.role!=='ADMIN'||!a.override)return{ok:false,error:'Pull-out ('+n.heads+' hd) is more than the inventory ('+iv.avail+' hd).'};n.remarks='[ADMIN OVERRIDE: '+a.override_reason+' · inventory '+iv.avail+' hd] '+String(n.remarks||'').replace(/^\[ADMIN OVERRIDE:[^\]]*\]\s*/,'')}}Object.assign(r,n,{edited_at:new Date().toISOString(),edited_by:u.username});this.save(d);return{ok:true}}
     if(fn==='saveSnapshot'){if(u.role==='MANAGER')return{ok:false,error:'Sup/Manager accounts are view-only.'};if(d.snapshots.some(s=>s.snap_id===a.snap_id))return{ok:true};if(a.kind==='auto'&&d.snapshots.some(s=>s.kind==='auto'&&s.week_key===a.week_key))return{ok:true,skipped:true};const at=a.taken_at||new Date().toISOString();a.rows.forEach(r=>d.snapshots.push(Object.assign({snap_id:a.snap_id,taken_at:at,username:u.username,kind:a.kind,week_key:a.week_key,as_of:a.as_of},r)));this.save(d);return{ok:true}}
     if(fn==='saveSettings'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};if(a.breeds)d.breeds=a.breeds;if(a.farms)d.farms=a.farms;if(a.rules)d.rules=a.rules;(a.renames||[]).forEach(x=>{d.reports.concat(d.pullouts,d.snapshots).forEach(r=>{if(x.type==='farm'&&r.farm===x.from)r.farm=x.to;if(x.type==='breed'&&r.breed===x.from)r.breed=x.to})});this.save(d);return{ok:true}}
     if(fn==='listUsers')return{ok:true,users:d.users.map(x=>({username:x.username,name:x.name,role:x.role,farm:x.farm,active:x.active}))};
@@ -655,7 +739,7 @@ function apiErr(m){const e=new Error(m==='SESSION_EXPIRED'?'Your session expired
 const EMPTY=()=>({reports:[],pullouts:[],snapshots:[],breeds:[],farms:[],rules:{}});
 let DATA=Object.assign(EMPTY(),ls.get('cache',{}));
 let QUEUE=ls.get('queue',[]);
-const UI={view:'report',gran:'week',groupBy:'band',fFarm:'',fBreed:'',asOf:todayYmd(),invDate:null,rFarm:'',pFarm:'',pType:'SOLD',edit:null,recKind:'active',recSearch:'',cmp:'',aFrom:null,aTo:null,aFarm:'',aBand:'',aBase:'rolling',aTypes:['SOLD','SLAUGHTERED','CONSUMPTION'],pBld:''};
+const UI={view:'report',gran:'week',groupBy:'band',fFarm:'',fBreed:'',asOf:todayYmd(),invDate:null,rFarm:'',pFarm:'',pType:'SOLD',edit:null,recKind:'active',recSearch:'',cmp:'',aFrom:null,aTo:null,aFarm:'',aBand:'',aBase:'rolling',aTypes:['SOLD','SLAUGHTERED','CONSUMPTION'],pBld:'',aMode:'fvp',wbView:'band',wbMode:'hd',aCust:''};
 let FS=ls.get('fs',1);document.documentElement.style.setProperty('--fs',FS);
 const ME=()=>SESSION&&SESSION.user;
 const ROLE_ALIAS={GROWER:'RECORDER',VIEWER:'MANAGER'};
@@ -748,7 +832,7 @@ function renderShell(){
   $('snapNow').classList.toggle('hidden',!canEnter());
   renderNet();renderPend();
 }
-function go(v){UI.view=v;ls.set('view',v);renderShell();renderView();window.scrollTo(0,0)}
+function go(v){UI.view=v;ls.set('view',v);renderShell();renderView();$('mainEl').scrollTo(0,0)}
 function renderView(){
   ({report:renderReport,pullout:renderPullout,forecast:renderForecastView,inventory:renderInv,analysis:renderAnalysis,records:renderRecords,settings:renderSettings}[UI.view]||(()=>{}))();
 }
@@ -793,9 +877,9 @@ function renderReport(){
 }
 function renderGrid(){
   const t=$('rGrid');t.replaceChildren();
-  thead(t,['','Building','Breed / line','Ave. age (d)','Weight range','Good hd','Def. hd','Remarks','Sale · status']);
+  thead(t,['','Building','Breed / line','Ave. age (d)','Weight range','Good hd','Def. hd','Remarks','Sale · status','']);
   const tb=el('tbody');
-  if(!RROWS.length)empty(tb,9,'No buildings set up for this farm. Admin adds them in Settings, or use "+ Other building".');
+  if(!RROWS.length)empty(tb,10,'No buildings set up for this farm. Admin adds them in Settings, or use "+ Other building".');
   RROWS.forEach((r,i)=>{
     const tr=el('tr',{id:'rrow_'+i,class:(r.include?'on':'')+(r.base?'':' nobatch')});
     const ck=el('input',{type:'checkbox','aria-label':'Include '+r.building});ck.checked=r.include;ck.onchange=()=>{r.include=ck.checked;rowUpd(i)};
@@ -810,6 +894,9 @@ function renderGrid(){
     const df=el('input',{type:'number',inputmode:'numeric',min:'0'});df.value=r.def;df.oninput=()=>{r.def=df.value;mark(i)};cellTd(tr,'Def. hd',df,'in num');
     const rm=el('input',{placeholder:'—'});rm.value=r.remarks;rm.oninput=()=>{r.remarks=rm.value;mark(i)};cellTd(tr,'Remarks',rm,'in wide');
     cellTd(tr,'Sale · status',el('span',{id:'rauto_'+i}),'auto');
+    const x=el('button',{type:'button',class:'rx',title:r.extra?'Remove this row':'Clear changes (row will not be saved)','aria-label':'Clear row'},'✕');
+    x.onclick=()=>{if(r.extra)RROWS.splice(i,1);else RROWS[i]=rowFromBatch(r.building,$('r_report_date').value||todayYmd());renderGrid()};
+    cellTd(tr,'',x,'xc');
     tb.append(tr)});
   t.append(tb);RROWS.forEach((r,i)=>rowUpd(i));
 }
@@ -834,14 +921,14 @@ function submitGrid(){
   const reports=inc.map(r=>{const v=rowVals(r),M=model(Object.assign({farm:UI.rFarm},v),date);return Object.assign({id:uid(),farm:UI.rFarm,batch:'',status:'ACTIVE',planned_sale:ymd(M.natural)},v)});
   queuePush('submitMany',{reports});
   toast(reports.length+' report'+(reports.length>1?'s':'')+(navigator.onLine?' sent ✓':' saved on this device — will send when online'));
-  RROWS=null;renderReport();window.scrollTo({top:0,behavior:'smooth'});
+  RROWS=null;renderReport();$('mainEl').scrollTo({top:0,behavior:'smooth'});
 }
 function tileFor(bn,farm,opts){
   const T=pd(todayYmd()),{b,avail}=availFor(farm,bn);
   const tile=el(opts.pick?'button':'div',{class:'tile',type:opts.pick?'button':null});
   if(!b){tile.classList.add('empty');const tt=el('div',{class:'tt'});tt.append(el('span',null,bn),el('span',{class:'badge b-grow'},'Empty'));tile.append(tt,el('div',{class:'meta'},'No active batch'));
     if(opts.actions&&canEnter()){const a=el('div',{class:'acts'}),nb=el('button',{class:'btn sm',type:'button'},'+ New batch');nb.onclick=()=>pickBuilding(bn);a.append(nb);tile.append(a)}
-    if(opts.pick)tile.disabled=true;return tile}
+    if(opts.pick&&!opts.allowEmpty)tile.disabled=true;return tile}
   const M=model(b,todayYmd()),s=M.at(T),st=statusAt(M,T);tile.classList.add('t-'+st.k);
   const tt=el('div',{class:'tt'}),bd=el('span');bd.append(el('span',{class:'badge '+st.cls},st.t));if(b._pending)bd.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));tt.append(el('span',null,bn),bd);tile.append(tt);
   tile.append(el('div',{class:'meta br'},b.breed));
@@ -933,14 +1020,20 @@ function editPullout(p){
   const rf=fld(body,'Ref. no.',el('input'));rf.value=p.ref_no||'';
   const cu=fld(body,'Customer / notes',el('input'),'s4');cu.value=p.customer||'';
   const rm=fld(body,'Remarks',el('input'),'s4');rm.value=p.remarks||'';
-  const info=el('div',{class:'hint s4'},'Inventory available for this pull-out: '+fmt(avail)+' hd (in '+p.building+').');const er=el('div',{class:'err s4'});body.append(info,er);
+  const info=el('div',{class:'hint s4'},'Inventory available for this pull-out: '+fmt(avail)+' hd (in '+p.building+').');const er=el('div',{class:'err s4'});body.append(info);
+  let ovc=null,ovr=null;if(isAdmin()){const box=el('div',{class:'ovr s4'}),lb=el('label');ovc=el('input',{type:'checkbox'});lb.append(ovc,document.createTextNode(' Admin override (allow more than inventory)'));ovr=el('input',{placeholder:'Reason for override'});box.append(lb,ovr);body.append(box)}
+  body.append(er);
   modal('Edit pull-out — '+p.farm+' · '+p.building,body,[{text:'Cancel'},{text:'Save changes',cls:'primary',onClick:()=>{
     const f={date:dt.value,type:ty.value,kg:kg.value===''?'':+kg.value,ref_no:rf.value.trim(),customer:cu.value.trim(),remarks:rm.value.trim()};BANDS.forEach((b,i)=>f[b.f]=+ins[i].value||0);
     const h=sum(BANDS,b=>f[b.f]);
     if(!f.date||pd(f.date)>pd(todayYmd())){er.textContent='Check the date.';return false}
     if(h<=0){er.textContent='Enter at least one head.';return false}
-    if(availFor(p.farm,p.building).b&&h>avail){er.textContent='Pull-out ('+h+' hd) is more than the inventory ('+avail+' hd).';return false}
-    queuePush('edit',{sheet:'Pullouts',id:p.id,fields:f});renderView();toast('Pull-out updated.')}}]);
+    let extra={};
+    if(availFor(p.farm,p.building).b&&h>avail){
+      if(!(isAdmin()&&ovc&&ovc.checked)){er.textContent='Pull-out ('+h+' hd) is more than the inventory ('+avail+' hd).'+(isAdmin()?' Tick Admin override to allow it.':'');return false}
+      if(!ovr.value.trim()){er.textContent='Type the reason for the override.';return false}
+      extra={override:true,override_reason:ovr.value.trim()}}
+    queuePush('edit',Object.assign({sheet:'Pullouts',id:p.id,fields:f},extra));renderView();toast('Pull-out updated.')}}]);
 }
 
 /* ---------- PULL-OUT ---------- */
@@ -952,9 +1045,10 @@ function renderPullout(){
   $$('#pType .type').forEach(b=>b.classList.toggle('on',b.dataset.t===UI.pType));
   $('pCustLab').textContent=CUST_LAB[UI.pType][0];$('p_customer').placeholder=CUST_LAB[UI.pType][1];
   const box=$('pTiles');box.replaceChildren();const blds=buildingsOf(UI.pFarm);
-  if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b)UI.pBld='';
+  if(!isAdmin())UI.pOvr=false;$('pOvrBox').classList.toggle('hidden',!isAdmin());$('pOvr').checked=!!UI.pOvr;$('pOvrReason').classList.toggle('hidden',!UI.pOvr);
+  if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b&&!UI.pOvr)UI.pBld='';
   if(!blds.length)box.append(el('div',{class:'hint'},'No buildings for this farm yet.'));
-  blds.forEach(bn=>{const t=tileFor(bn,UI.pFarm,{pick:true});if(bn===UI.pBld)t.classList.add('sel');if(!t.disabled)t.onclick=()=>{UI.pBld=bn;renderPullout()};box.append(t)});
+  blds.forEach(bn=>{const t=tileFor(bn,UI.pFarm,{pick:true,allowEmpty:isAdmin()&&UI.pOvr});if(bn===UI.pBld)t.classList.add('sel');if(!t.disabled)t.onclick=()=>{UI.pBld=bn;renderPullout()};box.append(t)});
   $('p_building').value=UI.pBld||'';
   if(!$('pBands').children.length){BANDS.forEach(b=>{const d=el('div',{class:'bandbox'}),l=el('div',{class:'bl'}),i=el('i');i.style.background=cssv(b.c);l.append(i,document.createTextNode(b.k+' kg'));
     const st=el('div',{class:'stepper'}),mi=el('button',{type:'button','aria-label':'minus'},'−'),inp=el('input',{type:'number',inputmode:'numeric',min:'0',id:'p_'+b.f,placeholder:'0'}),pl=el('button',{type:'button','aria-label':'plus'},'+');
@@ -963,13 +1057,17 @@ function renderPullout(){
   updatePAuto();renderPList();lockForm('pForm','pViewOnly');
 }
 function pVals(){const o={date:$('p_date').value,farm:UI.pFarm,building:UI.pBld||'',type:UI.pType,customer:$('p_customer').value.trim(),ref_no:$('p_ref_no').value.trim(),remarks:$('p_remarks').value.trim(),kg:$('p_kg').value===''?'':+$('p_kg').value};BANDS.forEach(b=>o[b.f]=Math.max(0,Math.round(+$('p_'+b.f).value||0)));o.heads=sum(BANDS,b=>o[b.f]);return o}
+const pOverride=()=>isAdmin()&&!!UI.pOvr;
+function pExceeds(v){if(!v.building)return false;const {b,avail}=availFor(v.farm,v.building);return !b||v.heads>avail}
 function pCheck(v){
   if(!v.building)return'Tap the building the hogs came from.';
   const {b,avail}=availFor(v.farm,v.building);
-  if(!b)return v.building+' has no active batch.';
   if(!v.date)return'Enter the date.';if(pd(v.date)>pd(todayYmd()))return'Date cannot be in the future.';
   if(!(v.heads>0))return'Enter heads in at least one weight category.';
-  if(v.heads>avail)return'Not allowed: '+v.heads+' hd is more than the '+avail+' hd in '+v.building+'. Check the count, or update the farm report first.';
+  if(pExceeds(v)){
+    if(!pOverride())return !b?v.building+' has no active batch.':'Not allowed: '+v.heads+' hd is more than the '+avail+' hd in '+v.building+'. Check the count, or update the farm report first.';
+    if(!$('pOvrReason').value.trim())return'Admin override: type the reason.';
+  }
   return'';
 }
 function updatePAuto(){
@@ -981,9 +1079,11 @@ function updatePAuto(){
   it('Building',v.building||'—');it('In building',b?fmt(avail)+' hd':'—');it('This pull-out',fmt(v.heads)+' hd');it('Remaining',b?fmt(avail-v.heads)+' hd':'—');box.append(g);
   if(b){const m=el('div',{class:'meter'}),f=el('div');f.style.width=Math.min(100,avail?v.heads/avail*100:0)+'%';m.append(f);box.append(m)}
   if(v.heads&&v.kg)box.append(el('div',{class:'hint',style:'margin-top:6px'},'Avg live weight: '+fmt1(v.kg/v.heads)+' kg/head'));
-  const over=b&&v.heads>avail;box.classList.toggle('over',!!over);
-  $('pErr').textContent=over?pCheck(v):'';
-  $('pSubmit').disabled=!canEnter()||!b||!(v.heads>0)||over;
+  const over=pExceeds(v)&&v.heads>0,bad=pCheck(v),ovOk=over&&pOverride()&&!bad;
+  box.classList.toggle('over',over&&!ovOk);box.classList.toggle('warn',!!ovOk);
+  if(ovOk)box.append(el('div',{class:'ovnote'},'⚠ Admin override: '+(b?v.heads+' hd vs '+avail+' hd recorded':'no active batch in '+v.building)+'. It will be saved with your reason and flagged in the remarks.'));
+  $('pErr').textContent=over?bad:'';
+  $('pSubmit').disabled=!canEnter()||!!bad;
   $('pSubmit').textContent=v.heads>0?'Save '+(PTYPES.find(p=>p.k===v.type)||{}).t.toLowerCase()+' · '+v.heads+' hd':'Save pull-out';
 }
 function renderPList(){
@@ -1141,6 +1241,8 @@ function renderAnalysis(){
   fillSel('aFarm',farmNames(),UI.aFarm);fillSel('aBand',BANDS.map(b=>({v:b.k,t:b.k+' kg'})),UI.aBand,'All weight categories');
   const sl=snapList();fillSel('aBase',[{v:'rolling',t:'Rolling — latest saved forecast before each week'}].concat(sl.map(s=>({v:s.id,t:'Fixed: '+snapLabel(s)}))),UI.aBase,null);
   const ty=$('aTypes');if(ty.children.length<2){PTYPES.forEach(p=>{const l=el('label'),c=el('input',{type:'checkbox',value:p.k});c.checked=UI.aTypes.includes(p.k);c.onchange=()=>{UI.aTypes=$$('#aTypes input:checked').map(x=>x.value);renderAnalysis()};l.append(c,document.createTextNode(p.t));ty.append(l)})}
+  const wbm=UI.aMode==='wb';$$('#aMode button').forEach(b=>b.classList.toggle('on',b.dataset.a===UI.aMode));$('aFvp').classList.toggle('hidden',wbm);$('aWb').classList.toggle('hidden',!wbm);$$('#v-analysis .fvpOnly').forEach(x=>x.classList.toggle('hidden',wbm));$$('#v-analysis .wbOnly').forEach(x=>x.classList.toggle('hidden',!wbm));
+  if(wbm){const cs=[...new Set(allPullouts().filter(p=>p.date>=UI.aFrom&&p.date<=UI.aTo&&(!UI.aFarm||p.farm===UI.aFarm)&&UI.aTypes.includes(p.type)).map(custOf))].sort();if(UI.aCust&&!cs.includes(UI.aCust))UI.aCust='';fillSel('aCust',cs,UI.aCust,'All customers');renderWB();return}
   const D=analysisData(),R=D.rows,F=sum(R,r=>r.fc),A=sum(R,r=>r.ac),E=sum(R,r=>Math.abs(r.fc-r.ac)),acu=acc(F,A,E);
   const k=$('aKpis');k.replaceChildren();
   kpi(k,'Forecast',fmt(F),'heads in period');kpi(k,'Actual pull-out',fmt(A),UI.aTypes.map(t=>(PTYPES.find(p=>p.k===t)||{}).t).join(' + ')||'none ticked');
@@ -1176,6 +1278,80 @@ function drawAChart(R){
       tip.style.display='block';const bx=box.getBoundingClientRect(),cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-bx.left,cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-bx.top;let lx=cx+14;if(lx+200>bx.width)lx=cx-210;tip.style.left=Math.max(0,lx)+'px';tip.style.top=Math.max(0,cy-30)+'px'};
     hit.addEventListener('mousemove',show);hit.addEventListener('click',show);hit.addEventListener('mouseleave',()=>tip.style.display='none');svg.append(hit)});
   svg.append(mk('line',{x1:ml,x2:W-mr,y1:mt+ih,y2:mt+ih,stroke:'#999'}));box.append(svg);
+}
+
+/* ---------- WEIGHT BAND SUMMARY ---------- */
+const WBO=new Set();
+const custOf=p=>p.type==='MORTALITY'?'Mortality':(String(p.customer||'').trim()||'('+(PTYPES.find(t=>t.k===p.type)||{t:p.type}).t.toLowerCase()+', no customer)');
+function wbList(){const from=UI.aFrom,to=UI.aTo;return allPullouts().filter(p=>p.date>=from&&p.date<=to&&(!UI.aFarm||p.farm===UI.aFarm)&&UI.aTypes.includes(p.type)&&(!UI.aCust||custOf(p)===UI.aCust))}
+function wbAgg(list){const o={n:0,kg:0,nk:0,b:BANDS.map(()=>0),c:list.length};list.forEach(p=>{o.n+=+p.heads||0;BANDS.forEach((b,i)=>o.b[i]+=+p[b.f]||0);if(p.kg!==''&&p.kg!=null&&+p.kg>0){o.kg+=+p.kg;o.nk+=+p.heads||0}});return o}
+const wbAvg=a=>a.nk?a.kg/a.nk:null;
+function wbCells(tr,a){
+  BANDS.forEach((b,i)=>tr.append(el('td',{class:'n'},UI.wbMode==='pct'?(a.n?fmt1(a.b[i]/a.n*100)+'%':'–'):(a.b[i]?fmt(a.b[i]):'–'))));
+  tr.append(el('td',{class:'n tb'},fmt(a.n)),el('td',{class:'n'},a.kg?fmt1(a.kg):'–'),el('td',{class:'n'},wbAvg(a)?fmt1(wbAvg(a)):'–'));
+}
+function renderWB(){
+  const list=wbList(),T=wbAgg(list),farms=[...new Set(list.map(p=>p.farm))].sort();
+  $('wbSub').textContent=list.length+' pull-out entr'+(list.length===1?'y':'ies')+' · '+niceY(pd(UI.aFrom))+' – '+niceY(pd(UI.aTo))+(UI.aFarm?' · '+UI.aFarm:' · '+(farms.join(' & ')||'all farms'))+' · '+UI.aTypes.map(t=>(PTYPES.find(p=>p.k===t)||{}).t).join(' + ');
+  $('wbTitle').textContent=(UI.aFarm||farms.join(' & ')||'All farms')+' · Hog Weight Band Summary';
+  const k=$('wbKpis');k.replaceChildren();
+  kpi(k,'Total heads',fmt(T.n),(T.kg?fmt1(T.kg)+' kg · avg '+fmt1(wbAvg(T))+' kg':'no live weight entered'));
+  BANDS.forEach((b,i)=>{const d=el('div',{class:'kpi',style:'border-left-color:'+cssv(b.c)});d.append(el('div',{class:'k'},b.k+' kg'),el('div',{class:'v'},fmt(T.b[i])),el('div',{class:'n'},(T.n?fmt1(T.b[i]/T.n*100):'0')+'% of heads'));k.append(d)});
+  const bar=$('wbBar');bar.replaceChildren();BANDS.forEach((b,i)=>{if(!T.b[i])return;const d=el('div',{title:b.k+' kg: '+T.b[i]+' hd ('+fmt1(T.b[i]/T.n*100)+'%)'});d.style.cssText='width:'+(T.b[i]/T.n*100)+'%;background:'+cssv(b.c);bar.append(d)});
+  $$('#wbView button').forEach(b=>b.classList.toggle('on',b.dataset.v===UI.wbView));$$('#wbTools [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===UI.wbMode));
+  const t=$('wbTbl');t.replaceChildren();
+  if(!list.length){const tb=el('tbody');empty(tb,8,'No pull-outs for these filters.');t.append(tb);wbNotes(list);return}
+  if(UI.wbView==='band'){
+    const types=PTYPES.filter(p=>UI.aTypes.includes(p.k));
+    thead(t,['Weight band','Heads','% of heads'].concat(farms,types.map(x=>x.t)),[1,2].concat(farms.map((f,i)=>3+i),types.map((x,i)=>3+farms.length+i)));
+    const tb=el('tbody');
+    BANDS.forEach((b,i)=>{const tr=el('tr',{class:'lv0'}),td=el('td');td.append(el('span',{class:'sw',style:'background:'+cssv(b.c)}),document.createTextNode(b.k+' kg'));tr.append(td,el('td',{class:'n tb'},fmt(T.b[i])),el('td',{class:'n'},T.n?fmt1(T.b[i]/T.n*100)+'%':'–'));
+      farms.forEach(f=>{const v=sum(list.filter(p=>p.farm===f),p=>p[b.f]);tr.append(el('td',{class:'n'},UI.wbMode==='pct'?(v?fmt1(v/sum(list.filter(p=>p.farm===f),p=>p.heads)*100)+'%':'–'):(v?fmt(v):'–')))});
+      types.forEach(x=>{const rs=list.filter(p=>p.type===x.k),v=sum(rs,p=>p[b.f]);tr.append(el('td',{class:'n'},UI.wbMode==='pct'?(v?fmt1(v/sum(rs,p=>p.heads)*100)+'%':'–'):(v?fmt(v):'–')))});tb.append(tr)});
+    const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Grand total'),el('td',{class:'n'},fmt(T.n)),el('td',{class:'n'},'100%'));farms.forEach(f=>tr.append(el('td',{class:'n'},fmt(sum(list.filter(p=>p.farm===f),p=>p.heads)))));types.forEach(x=>tr.append(el('td',{class:'n'},fmt(sum(list.filter(p=>p.type===x.k),p=>p.heads)))));tb.append(tr);
+    const tr2=el('tr',{class:'sub'});tr2.append(el('td',null,'Live weight (kg) · avg'),el('td',{class:'n'},T.kg?fmt1(T.kg):'–'),el('td',{class:'n'},wbAvg(T)?fmt1(wbAvg(T))+' avg':'–'));farms.forEach(f=>{const a=wbAgg(list.filter(p=>p.farm===f));tr2.append(el('td',{class:'n'},a.kg?fmt(a.kg)+' · '+fmt1(wbAvg(a)):'–'))});types.forEach(x=>{const a=wbAgg(list.filter(p=>p.type===x.k));tr2.append(el('td',{class:'n'},a.kg?fmt(a.kg)+' · '+fmt1(wbAvg(a)):'–'))});tb.append(tr2);
+    t.append(tb);wbNotes(list);return;
+  }
+  const levels=UI.wbView==='cust'?[['Farm',p=>p.farm],['Customer',custOf],['Date',p=>p.date]]:[['Date',p=>p.date],['Farm',p=>p.farm],['Customer',custOf]];
+  thead(t,[levels.map(l=>l[0]).join(' › ')+' › entry'].concat(BANDS.map(b=>b.k+' kg'),['Heads','Live kg','Avg kg']),[1,2,3,4,5,6,7]);
+  BANDS.forEach((b,i)=>{const th=t.querySelectorAll('th')[i+1];th.style.borderBottom='3px solid '+cssv(b.c)});
+  const tb=el('tbody'),label=(lv,key)=>levels[lv][0]==='Date'?niceY(pd(key)):key;
+  const walk=(rows,lv,parent,vis)=>{
+    if(lv>=levels.length){rows.slice().sort((a,b)=>(a.date+a.submitted_at).localeCompare(b.date+b.submitted_at)).forEach(p=>{const tr=el('tr',{class:'lv'+lv+' leaf'});if(!vis)tr.hidden=true;const td=el('td');td.append(el('span',{class:'tg'},'·'),document.createTextNode(p.building+' · '+(PTYPES.find(x=>x.k===p.type)||{t:p.type}).t+(p.ref_no?' · Ref '+p.ref_no:'')+(UI.wbView==='date'?'':'')));tr.append(td);wbCells(tr,wbAgg([p]));tb.append(tr)});return}
+    const g=new Map();rows.forEach(p=>{const k=levels[lv][1](p);if(!g.has(k))g.set(k,[]);g.get(k).push(p)});
+    [...g.keys()].sort((a,b)=>levels[lv][0]==='Date'?(UI.wbView==='date'?b.localeCompare(a):a.localeCompare(b)):a.localeCompare(b)).forEach(k=>{
+      const id=parent+'|'+k,isOpen=WBO.has(id),rs=g.get(k),tr=el('tr',{class:'lv'+lv+' kid','data-id':id});if(!vis)tr.hidden=true;
+      const td=el('td');td.append(el('span',{class:'tg'},isOpen?'▾':'▸'),document.createTextNode(label(lv,k)),el('span',{class:'cnt'},' '+rs.length));tr.append(td);wbCells(tr,wbAgg(rs));
+      tr.onclick=()=>{if(WBO.has(id)){[...WBO].forEach(o=>{if(o===id||o.startsWith(id+'|'))WBO.delete(o)})}else WBO.add(id);renderWB()};
+      tb.append(tr);walk(rs,lv+1,id,vis&&isOpen)})};
+  walk(list,0,UI.wbView,true);
+  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Grand total'));wbCells(tr,T);tb.append(tr);t.append(tb);wbNotes(list);
+}
+function wbExpandAll(){const list=wbList(),levels=UI.wbView==='cust'?[p=>p.farm,custOf,p=>p.date]:[p=>p.date,p=>p.farm,custOf];list.forEach(p=>{let id=UI.wbView;levels.forEach(f=>{id+='|'+f(p);WBO.add(id)})});renderWB()}
+function wbNotes(list){
+  const u=$('wbNotes');u.replaceChildren();const li=(b,t)=>{const x=el('li');x.append(el('b',null,b+' '),document.createTextNode(t));u.append(x)};
+  li('Bands:','Under 90 kg · 90–120 kg · 121–130 kg · 131 kg & up — as entered per pull-out (from the tally / scale sheet).');
+  li('Source:','Pull-outs recorded in this app ('+UI.aTypes.map(t=>(PTYPES.find(p=>p.k===t)||{}).t).join(', ')+'). Voided entries are not counted. Tick Mortality above to include dead hogs.');
+  const noKg=list.filter(p=>!(+p.kg>0));if(noKg.length)li('Live weight:',noKg.length+' entr'+(noKg.length>1?'ies have':'y has')+' no total kg, so live kg and average use only entries with kg ('+fmt(sum(list,p=>p.heads)-sum(noKg,p=>p.heads))+' of '+fmt(sum(list,p=>p.heads))+' heads).');
+  const ov=list.filter(p=>/^\[ADMIN OVERRIDE/.test(p.remarks||''));if(ov.length)li('Admin overrides:',ov.length+' entr'+(ov.length>1?'ies were':'y was')+' saved over the recorded inventory: '+ov.map(p=>p.farm+' '+p.building+' '+nice(pd(p.date))).join(', ')+'.');
+}
+async function exportWB(){
+  const btn=$('xlWb');btn.disabled=true;
+  try{await loadXLSX();const wb=XLSX.utils.book_new(),list=wbList(),T=wbAgg(list);
+    const head=[[$('wbTitle').textContent],[$('wbSub').textContent],['Generated '+new Date().toLocaleString()+' by '+ME().name],[]];
+    const hdr=BANDS.map(b=>b.k+' kg').concat(['Heads','Live kg','Avg kg']);
+    const row=(lbl,a)=>lbl.concat(a.b,[a.n,a.kg?Math.round(a.kg*10)/10:'',wbAvg(a)?Math.round(wbAvg(a)*10)/10:'']);
+    const bands=[['Weight band','Heads','% of heads']];BANDS.forEach((b,i)=>bands.push([b.k+' kg',T.b[i],T.n?Math.round(T.b[i]/T.n*1000)/10:0]));bands.push(['Grand total',T.n,100],['Live kg',T.kg?Math.round(T.kg*10)/10:'',''],['Avg kg',wbAvg(T)?Math.round(wbAvg(T)*10)/10:'','']);
+    addSheet(wb,'Weight Bands',head.concat(bands),[18,10,12]);
+    const tree=(levels,name)=>{const out=[[...levels.map(l=>l[0])].concat(hdr)];const go=(rows,lv,pre)=>{const g=new Map();rows.forEach(p=>{const k=levels[lv][1](p);if(!g.has(k))g.set(k,[]);g.get(k).push(p)});[...g.keys()].sort().forEach(k=>{const lab=pre.concat([k]);out.push(row(lab.concat(Array(levels.length-lab.length).fill('')),wbAgg(g.get(k))));if(lv+1<levels.length)go(g.get(k),lv+1,lab)})};go(list,0,[]);out.push(row(['Grand total'].concat(Array(levels.length-1).fill('')),T));addSheet(wb,name,head.concat(out),[16,24,14,10,10,10,10,9,11,9])};
+    tree([['Farm',p=>p.farm],['Customer',custOf],['Date',p=>p.date]],'By Farm & Customer');
+    tree([['Date',p=>p.date],['Farm',p=>p.farm],['Customer',custOf]],'By Date');
+    const ent=[['Date','Farm','Building','Type','Customer / destination','Ref. no.'].concat(hdr,['Recorded by','Remarks'])];
+    list.slice().sort((a,b)=>(a.date+a.farm+a.building).localeCompare(b.date+b.farm+b.building)).forEach(p=>{const a=wbAgg([p]);ent.push([p.date,p.farm,p.building,p.type,p.customer||'',p.ref_no||''].concat(a.b,[a.n,a.kg||'',wbAvg(a)?Math.round(wbAvg(a)*10)/10:'',p.name||p.username||'',p.remarks||'']))});
+    addSheet(wb,'Entries',head.concat(ent),[12,12,12,13,24,12,10,10,10,9,8,10,9,16,30]);
+    XLSX.writeFile(wb,'Hog_Weight_Band_Summary_'+UI.aFrom+'_to_'+UI.aTo+(UI.aFarm?'_'+UI.aFarm:'')+'.xlsx');toast('Excel file downloaded.')}
+  catch(e){toast(e.message||'Download failed.',true)}
+  btn.disabled=false;
 }
 
 /* ---------- RECORDS ---------- */
@@ -1344,7 +1520,7 @@ function changePin(forced){
     try{await api('changePin',{oldPin:o.value,newPin:n.value});toast('PIN changed.');return true}catch(e){er.textContent=e.message;return false}}}]);
 }
 function logout(msg){if(QUEUE.length&&!msg){modal('Unsent entries',QUEUE.length+' entr'+(QUEUE.length>1?'ies are':'y is')+' not yet in the Google Sheet. Sign out anyway? They stay on this device and send next time you sign in.',[{text:'Stay'},{text:'Sign out',cls:'danger',onClick:()=>doOut()}]);return}doOut(msg)}
-function doOut(msg){try{if(SESSION)api('logout',{}).catch(()=>{})}catch(e){}SESSION=null;ls.del('session');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('lgErr').textContent=msg||''}
+function doOut(msg){try{if(SESSION)api('logout',{}).catch(()=>{})}catch(e){}SESSION=null;ls.del('session');document.body.classList.remove('app');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('lgErr').textContent=msg||''}
 function menu(){
   const body=el('div',{style:'display:grid;gap:8px'});let close;
   const b=(t,fn,cls)=>{const x=el('button',{class:'btn block '+(cls||'')},t);x.onclick=()=>{close();fn()};body.append(x)};
@@ -1374,9 +1550,11 @@ function bind(){
   $('pFarm').onchange=e=>{UI.pFarm=e.target.value;UI.pBld='';renderPullout()};
   $$('#pType .type').forEach(b=>b.onclick=()=>{UI.pType=b.dataset.t;renderPullout()});
   $('pForm').addEventListener('input',updatePAuto);
+  $('pOvr').onchange=e=>{UI.pOvr=e.target.checked;if(!UI.pOvr){$('pOvrReason').value='';if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b)UI.pBld=''}renderPullout();if(UI.pOvr)$('pOvrReason').focus()};
   $('pForm').addEventListener('submit',e=>{e.preventDefault();if(!canEnter())return;const v=pVals(),bad=pCheck(v);
     $('pErr').textContent=bad;if(bad)return;
-    queuePush('submitPullout',{pullout:Object.assign({id:uid()},v)});toast((PTYPES.find(p=>p.k===v.type)||{}).t+' · '+v.heads+' hd '+(navigator.onLine?'sent ✓':'saved on this device'));
+    const po=Object.assign({id:uid()},v);if(pOverride()&&pExceeds(v)){po.override=true;po.override_reason=$('pOvrReason').value.trim()}
+    queuePush('submitPullout',{pullout:po});UI.pOvr=false;$('pOvrReason').value='';toast((PTYPES.find(p=>p.k===v.type)||{}).t+' · '+v.heads+' hd '+(navigator.onLine?'sent ✓':'saved on this device'));
     BANDS.forEach(b=>$('p_'+b.f).value='');['p_kg','p_ref_no','p_remarks','p_customer'].forEach(id=>$(id).value='');renderPullout()});
   // forecast
   $('asOf').onchange=e=>{if(pd(e.target.value)){UI.asOf=e.target.value;UI.invDate=null;renderView()}};
@@ -1391,7 +1569,12 @@ function bind(){
   $('invDate').onchange=e=>{UI.invDate=e.target.value;renderInv()};
   // analysis
   $('aFrom').onchange=e=>{UI.aFrom=e.target.value;renderAnalysis()};$('aTo').onchange=e=>{UI.aTo=e.target.value;renderAnalysis()};
-  $('aFarm').onchange=e=>{UI.aFarm=e.target.value;renderAnalysis()};$('aBand').onchange=e=>{UI.aBand=e.target.value;renderAnalysis()};$('aBase').onchange=e=>{UI.aBase=e.target.value;renderAnalysis()};
+  $('aFarm').onchange=e=>{UI.aFarm=e.target.value;renderAnalysis()};
+  $('aCust').onchange=e=>{UI.aCust=e.target.value;renderAnalysis()};
+  $$('#aMode button').forEach(b=>b.onclick=()=>{UI.aMode=b.dataset.a;renderAnalysis()});
+  $$('#wbView button').forEach(b=>b.onclick=()=>{UI.wbView=b.dataset.v;WBO.clear();renderWB()});
+  $$('#wbTools [data-m]').forEach(b=>b.onclick=()=>{UI.wbMode=b.dataset.m;renderWB()});
+  $('wbExp').onclick=wbExpandAll;$('wbCol').onclick=()=>{WBO.clear();renderWB()};$('xlWb').onclick=exportWB;$('aBand').onchange=e=>{UI.aBand=e.target.value;renderAnalysis()};$('aBase').onchange=e=>{UI.aBase=e.target.value;renderAnalysis()};
   // records
   $('recKind').onchange=e=>{UI.recKind=e.target.value;renderRecords()};$('recSearch').oninput=e=>{UI.recSearch=e.target.value;renderRecords()};
   // settings
@@ -1400,11 +1583,11 @@ function bind(){
   $('addFarm').onclick=()=>{SET.farms.push({name:'New farm',factor:1,buildings:''});renderSettings()};
   $('addUser').onclick=()=>editUser(null);
   window.addEventListener('online',()=>{renderNet();renderPend();flush(true)});window.addEventListener('offline',()=>{renderNet();renderPend()});
-  let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(UI.view==='forecast')renderForecast();if(UI.view==='analysis')drawAChart(analysisData().rows)},150)});
+  let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(UI.view==='forecast')renderForecast();if(UI.view==='analysis'&&UI.aMode!=='wb')drawAChart(analysisData().rows)},150)});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SESSION){flush(true);if(Date.now()-ls.get('cacheAt',0)>5*60e3)load(true)}});
 }
 function startApp(){
-  $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
+  document.body.classList.add('app');$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
   UI.view=ls.get('view',canEnter()?'report':'forecast');if(!VIEWS.some(v=>v.k===UI.view&&v.roles.includes(role())))UI.view=canEnter()?'report':'forecast';
   renderShell();renderView();load(true).then(()=>flush(true));
 }
