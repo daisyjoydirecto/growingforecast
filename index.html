@@ -161,14 +161,69 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
 .autobox .lab{font-size:calc(10px * var(--fs));text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
 .modenote{font-size:calc(12.5px * var(--fs));padding:6px 10px;border-radius:3px;background:#eef4ff;color:#1f4fa8;border:1px solid #b9cdf5}
 .modenote.new{background:#f7f7f7;color:#555;border-color:#ddd}
-.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.seg button{padding:.6em .3em;border:1px solid var(--line2);background:#fff;border-radius:3px;font-weight:700;font-size:calc(12.5px * var(--fs));cursor:pointer}
-.seg button.on{background:var(--olive);border-color:var(--olive);color:#fff}
-.seg button[data-t=MORTALITY].on{background:var(--red);border-color:var(--red)}
-@media (max-width:420px){.seg{grid-template-columns:1fr 1fr}}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,215px),1fr));gap:8px}
+.tile{border:1px solid var(--line);border-top:3px solid var(--lime);border-radius:3px;padding:9px 11px;background:#fff;text-align:left;font-family:inherit;color:inherit;font-size:inherit;display:flex;flex-direction:column;gap:5px}
+.tile.t-sale{border-top-color:var(--ok)}.tile.t-flag{border-top-color:var(--amber)}.tile.t-grow{border-top-color:#9db8d9}
+.tile.empty{border-top-color:#ddd;background:#fafafa;color:var(--muted)}
+.tile .tt{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700;font-size:calc(15px * var(--fs))}
+.tile .meta{font-size:calc(12px * var(--fs));color:var(--muted)}
+.tile .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.tile .nums div{background:#f8f8f8;border-radius:3px;padding:3px 6px}
+.tile .nums .k{font-size:calc(9.5px * var(--fs));letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tile .nums .v{font-weight:700;white-space:nowrap}
+.tile .acts{display:flex;gap:5px;flex-wrap:wrap}
+.tiles.pick .tile{cursor:pointer}
+.tiles.pick .tile:hover:not(.empty){border-color:var(--olive)}
+.tiles.pick .tile.sel{outline:3px solid var(--lime);outline-offset:-1px;background:var(--soft)}
+.tiles.pick .tile.empty{cursor:not-allowed}
+.rlist{display:flex;flex-direction:column;max-height:720px;overflow:auto}
+.rlist .it{border-bottom:1px solid var(--line);padding:8px 2px;display:flex;flex-direction:column;gap:3px}
+.rlist .it:last-child{border-bottom:0}
+.rlist .l1{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:700}
+.rlist .l2{font-size:calc(12.5px * var(--fs));color:var(--muted)}
+.rlist .acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.rlist .edited{font-size:11px;color:#1f4fa8}
+.split.wide-left{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+@media (max-width:1100px){.split.wide-left{grid-template-columns:1fr}}
+.viewonly{background:#eef4ff;color:#1f4fa8;border:1px solid #b9cdf5;border-radius:3px;padding:8px 12px;margin-bottom:10px;font-weight:700;font-size:calc(13px * var(--fs))}
+.step{display:flex;align-items:center;gap:8px;font-weight:700;font-size:calc(12px * var(--fs));text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px}
+.step .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--black);color:var(--lime);align-items:center;justify-content:center;font-size:12px;letter-spacing:0}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.type{border:2px solid var(--line2);background:#fff;border-radius:4px;padding:10px 4px;font-weight:700;font-size:calc(13px * var(--fs));cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.type .ti{font-size:22px;line-height:1}
+.type.on{border-color:var(--olive);background:var(--soft);color:var(--olive)}
+.type.mort.on{border-color:var(--red);background:#fdecec;color:var(--red)}
+@media (max-width:480px){.types{grid-template-columns:1fr 1fr}}
 .bandin{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-@media (max-width:420px){.bandin{grid-template-columns:1fr 1fr}}
-.bandin label.f i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+@media (max-width:560px){.bandin{grid-template-columns:1fr 1fr}}
+.bandbox{border:1px solid var(--line);border-radius:3px;padding:8px;background:#fcfcfc}
+.bandbox .bl{display:flex;align-items:center;gap:5px;font-weight:700;font-size:calc(12px * var(--fs))}
+.bandbox .bl i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.bandbox .est{font-size:calc(11px * var(--fs));color:var(--muted);margin:2px 0 6px}
+.stepper{display:flex;align-items:stretch}
+.stepper button{width:38px;border:1px solid var(--line2);background:#fff;font-size:18px;font-weight:700;cursor:pointer;color:var(--olive)}
+.stepper button:first-child{border-radius:3px 0 0 3px}.stepper button:last-child{border-radius:0 3px 3px 0}
+.stepper input{border-radius:0;text-align:center;border-left:0;border-right:0;font-weight:700;padding:.5em .2em}
+.sumbox{margin-top:12px;border:2px solid var(--lime);border-radius:4px;padding:10px 12px;background:#fafcf3}
+.sumbox.over{border-color:var(--red);background:#fdecec}
+.sumbox .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:480px){.sumbox .sg{grid-template-columns:1fr 1fr}}
+.sumbox .k{font-size:calc(10px * var(--fs));letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sumbox .v{font-size:calc(20px * var(--fs));font-weight:700}
+.meter{height:10px;background:#e6e6e6;border-radius:5px;overflow:hidden;margin-top:8px}
+.meter>div{height:100%;background:var(--lime);border-radius:5px}
+.sumbox.over .meter>div{background:var(--red)}
+form.locked{opacity:.6;pointer-events:none}
+@media (max-width:560px){
+  .tiles{grid-template-columns:1fr 1fr;gap:6px}
+  .tile{padding:7px 8px;gap:3px}
+  .tile .tt{font-size:calc(13.5px * var(--fs))}
+  .tile .tt .badge{font-size:10px;padding:2px 5px}
+  .tile .nums{gap:3px}.tile .nums div{padding:2px 4px}.tile .nums .v{font-size:calc(12.5px * var(--fs))}
+  .tile .meta{font-size:calc(11px * var(--fs))}
+  .tile .acts .btn{padding:.3em .5em;font-size:calc(11.5px * var(--fs))}
+  .tiles.pick .tile .pl,.tiles.pick .tile .br{display:none}
+}
 .err{color:var(--red);font-weight:700;font-size:calc(13px * var(--fs))}
 .checks{display:flex;gap:6px 12px;flex-wrap:wrap;font-size:calc(13px * var(--fs))}
 .checks label{display:flex;gap:5px;align-items:center;cursor:pointer}
@@ -205,7 +260,7 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
     <input id="lgPin" type="password" inputmode="numeric" autocomplete="current-password" required>
     <div class="err" id="lgErr" style="margin-top:10px"></div>
     <button class="btn primary lg block" id="lgBtn" style="margin-top:14px">Sign in</button>
-    <p class="hint hidden" id="lgDemo" style="margin-top:14px">Demo mode (no Google Sheet linked). Try <b>admin</b> / <b>1234</b>, grower <b>kinate</b> / <b>1111</b>, or <b>viewer</b> / <b>0000</b>.</p>
+    <p class="hint hidden" id="lgDemo" style="margin-top:14px">Demo mode (no Google Sheet linked). Try <b>admin</b> / <b>1234</b>, recorder <b>kinate</b> / <b>1111</b>, or Sup/Manager <b>manager</b> / <b>0000</b>.</p>
   </form>
 </div>
 
@@ -232,9 +287,17 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
 <main>
   <!-- ===== FARM REPORT ===== -->
   <section id="v-report" class="view">
+    <div class="viewonly hidden" id="rViewOnly">👁 View only — Sup/Manager accounts can see the farm reports but cannot enter or change them.</div>
+    <div class="card">
+      <div class="chead">
+        <div><h2 class="title" style="margin:0">Buildings — current status</h2><div class="hint" id="bldCount"></div></div>
+        <div style="min-width:170px"><select id="rFarm" aria-label="Farm"></select></div>
+      </div>
+      <div class="tiles" id="bldTiles"></div>
+    </div>
     <div class="split">
       <div class="card" id="formCard">
-        <div class="chead"><h2 class="title" id="formTitle">Farm report</h2><div style="min-width:150px"><select id="rFarm" aria-label="Farm"></select></div></div>
+        <div class="chead"><h2 class="title" id="formTitle" style="margin:0">Farm report</h2></div>
         <form id="rForm" autocomplete="off">
           <div class="fgrid">
             <div><label class="f">Report date <span class="req">*</span></label><input type="date" id="r_report_date" required></div>
@@ -256,46 +319,51 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
         </form>
       </div>
       <div class="card">
-        <div class="chead"><h2>Buildings — current status</h2><span class="hint" id="bldCount"></span></div>
-        <div class="tablewrap rtw"><table class="rt" id="bldTbl"></table></div>
+        <div class="chead"><h2 style="margin:0">Recent reports</h2><span class="hint" id="recentLab"></span></div>
+        <div class="rlist" id="myReports"></div>
       </div>
     </div>
-    <div style="height:12px"></div>
-    <div class="card"><div class="chead"><h2>Recent reports</h2></div><div class="tablewrap rtw"><table class="rt" id="myReports"></table></div></div>
   </section>
 
   <!-- ===== PULL-OUT ===== -->
   <section id="v-pullout" class="view hidden">
-    <div class="split">
+    <div class="viewonly hidden" id="pViewOnly">👁 View only — Sup/Manager accounts can see pull-outs but cannot enter or change them.</div>
+    <div class="split wide-left">
       <div class="card">
-        <div class="chead"><h2 class="title">Pull-out</h2><div style="min-width:150px"><select id="pFarm" aria-label="Farm"></select></div></div>
+        <div class="chead"><h2 class="title" style="margin:0">Pull-out</h2><div style="min-width:170px"><select id="pFarm" aria-label="Farm"></select></div></div>
         <form id="pForm" autocomplete="off">
-          <div class="seg" id="pType" style="margin-bottom:10px">
-            <button type="button" data-t="SOLD" class="on">Sold</button><button type="button" data-t="SLAUGHTERED">Slaughtered</button><button type="button" data-t="CONSUMPTION">Consumption</button><button type="button" data-t="MORTALITY">Mortality</button>
+          <div class="step"><span class="num">1</span>Type of pull-out</div>
+          <div class="types" id="pType">
+            <button type="button" class="type" data-t="SOLD"><span class="ti">💰</span>Sold</button>
+            <button type="button" class="type" data-t="SLAUGHTERED"><span class="ti">🏭</span>Slaughtered</button>
+            <button type="button" class="type" data-t="CONSUMPTION"><span class="ti">🍖</span>Consumption</button>
+            <button type="button" class="type mort" data-t="MORTALITY"><span class="ti">✖</span>Mortality</button>
           </div>
+          <div class="step"><span class="num">2</span>Building <span class="hint" style="font-weight:400;margin-left:6px">tap one with live hogs</span></div>
+          <div class="tiles pick" id="pTiles"></div>
+          <input type="hidden" id="p_building">
+          <div class="step"><span class="num">3</span>Details</div>
           <div class="fgrid">
             <div><label class="f">Date <span class="req">*</span></label><input type="date" id="p_date" required></div>
-            <div><label class="f">Building <span class="req">*</span></label><select id="p_building" required></select></div>
-            <div class="s2"><label class="f" id="pCustLab">Customer / destination</label><input id="p_customer" placeholder="e.g. Kinate Slaughterhouse, buyer name"></div>
+            <div><label class="f">Ref. no. (DR / tally)</label><input id="p_ref_no" placeholder="optional"></div>
+            <div class="s2"><label class="f" id="pCustLab">Customer / buyer</label><input id="p_customer" placeholder="optional"></div>
           </div>
-          <label class="f" style="margin-top:10px">Heads per weight category <span class="req">*</span></label>
+          <div class="step"><span class="num">4</span>Heads per weight category</div>
           <div class="bandin" id="pBands"></div>
           <div class="fgrid" style="margin-top:10px">
-            <div><label class="f">Total heads</label><input id="p_heads" readonly></div>
-            <div><label class="f">Total live wt (kg)</label><input type="number" inputmode="decimal" min="0" step="0.1" id="p_kg" placeholder="optional"></div>
-            <div><label class="f">Ref. no. (DR / tally)</label><input id="p_ref_no" placeholder="optional"></div>
-            <div><label class="f">Remarks</label><input id="p_remarks" placeholder="optional"></div>
+            <div class="s2"><label class="f">Total live weight (kg)</label><input type="number" inputmode="decimal" min="0" step="0.1" id="p_kg" placeholder="optional"></div>
+            <div class="s2"><label class="f">Remarks</label><input id="p_remarks" placeholder="optional"></div>
           </div>
-          <div class="autobox" id="pAuto" style="margin-top:10px"></div>
+          <div class="sumbox" id="pSum"></div>
           <div class="err" id="pErr" style="margin-top:6px"></div>
           <button class="btn primary lg block" id="pSubmit" type="submit" style="margin-top:10px">Save pull-out</button>
         </form>
       </div>
       <div class="card">
-        <div class="chead"><h2>This week's pull-outs</h2><span class="hint" id="pWeekLab"></span></div>
+        <div class="chead"><h2 style="margin:0">This week</h2><span class="hint" id="pWeekLab"></span></div>
         <div class="kpis" id="pKpis"></div>
-        <div class="chead" style="margin-top:6px"><h2>Recent pull-outs</h2></div>
-        <div class="tablewrap rtw"><table class="rt" id="pList"></table></div>
+        <div class="chead" style="margin-top:4px"><h2 style="margin:0">Recent pull-outs</h2></div>
+        <div class="rlist" id="pList"></div>
       </div>
     </div>
   </section>
@@ -411,7 +479,7 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
     <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;align-items:center"><button class="btn primary" id="saveSettings">Save settings to the sheet</button><span class="hint" id="setMsg"></span></div>
     <div class="card">
       <div class="chead"><h2>Users</h2><button class="btn sm" id="addUser">+ Add user</button></div>
-      <div class="hint" style="margin-bottom:8px">GROWER = recorder for their farm (reports + pull-outs). VIEWER = dashboards only. ADMIN = everything.</div>
+      <div class="hint" style="margin-bottom:8px"><b>Admin</b> = everything (incl. void &amp; settings). <b>Recorder</b> = create, update and edit farm reports &amp; pull-outs for their farm; cannot void or open Settings. <b>Sup/Manager</b> = view all panels except Settings; Farm Report &amp; Pull-out are view-only.</div>
       <div class="tablewrap rtw"><table class="rt" id="userTbl"></table></div>
     </div>
   </section>
@@ -434,7 +502,7 @@ const SER=['--s1','--s2','--s3','--s4','--s5','--s6','--s7','--s8'];
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const PTYPES=[{k:'SOLD',t:'Sold'},{k:'SLAUGHTERED',t:'Slaughtered'},{k:'CONSUMPTION',t:'Consumption'},{k:'MORTALITY',t:'Mortality'}];
 const WR=(CFG.weightRanges||[]).map(([a,b])=>({a,b,label:a+'–'+b+' kg'}));
-const P='hogf2_';
+const P='hogf3_';
 
 const ls={get(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(P+k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(P+k)}catch(e){}}};
 
@@ -484,12 +552,14 @@ const demo={
     const pub=u=>({username:u.username,name:u.name,role:u.role,farms:String(u.farm||'').split(',').map(s=>s.trim()).filter(Boolean),mustChangePin:!!u.must});
     if(fn==='login'){const u=d.users.find(u=>u.username===String(a.username).toLowerCase()&&u.pin===String(a.pin)&&u.active);if(!u)return{ok:false,error:'Wrong username or PIN.'};return{ok:true,token:'demo-'+u.username,exp:Date.now()+30*DAY,user:pub(u)}}
     const u=d.users.find(x=>'demo-'+x.username===a.__token);if(!u)return{ok:false,error:'SESSION_EXPIRED'};
-    const farmBad=f=>u.role==='VIEWER'?'Viewers cannot record entries.':(u.role==='GROWER'&&u.farm&&u.farm!==f?'You can only record for: '+u.farm:'');
+    const farmBad=f=>u.role==='MANAGER'?'Sup/Manager accounts are view-only.':(u.role==='RECORDER'&&u.farm&&u.farm!==f?'You can only record for: '+u.farm:'');
+    const avail=(farm,bn,ex)=>{const reps=d.reports.filter(r=>!r.voided&&r.farm===farm&&r.building===bn).sort((x,y)=>(x.report_date+x.submitted_at).localeCompare(y.report_date+y.submitted_at));const last=reps[reps.length-1];if(!last||String(last.status||'ACTIVE')!=='ACTIVE')return{batch:false,avail:0};return{batch:true,avail:Math.max(0,(+last.good||0)+(+last.defective||0)-d.pullouts.filter(p=>!p.voided&&p.id!==ex&&p.farm===farm&&p.building===bn&&p.date>last.report_date).reduce((s,p)=>s+(+p.heads||0),0))}};
     if(fn==='data')return{ok:true,user:pub(u),reports:d.reports.filter(r=>!r.voided),pullouts:d.pullouts.filter(r=>!r.voided),snapshots:d.snapshots,breeds:d.breeds,farms:d.farms,rules:d.rules};
     if(fn==='submit'){const r=a.report,b=farmBad(r.farm);if(b)return{ok:false,error:b};if(!d.reports.some(x=>x.id===r.id))d.reports.push(Object.assign({},r,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
-    if(fn==='submitPullout'){const p=a.pullout,b=farmBad(p.farm);if(b)return{ok:false,error:b};if(!d.pullouts.some(x=>x.id===p.id))d.pullouts.push(Object.assign({},p,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
-    if(fn==='void'){const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:true};if(u.role!=='ADMIN'&&r.username!==u.username)return{ok:false,error:'You can only void your own entries.'};r.voided=true;this.save(d);return{ok:true}}
-    if(fn==='saveSnapshot'){if(u.role==='VIEWER')return{ok:false,error:'Viewers cannot save snapshots.'};if(d.snapshots.some(s=>s.snap_id===a.snap_id))return{ok:true};if(a.kind==='auto'&&d.snapshots.some(s=>s.kind==='auto'&&s.week_key===a.week_key))return{ok:true,skipped:true};const at=a.taken_at||new Date().toISOString();a.rows.forEach(r=>d.snapshots.push(Object.assign({snap_id:a.snap_id,taken_at:at,username:u.username,kind:a.kind,week_key:a.week_key,as_of:a.as_of},r)));this.save(d);return{ok:true}}
+    if(fn==='submitPullout'){const p=a.pullout,b=farmBad(p.farm);if(b)return{ok:false,error:b};if(d.pullouts.some(x=>x.id===p.id))return{ok:true};const iv=avail(p.farm,p.building);if(!iv.batch)return{ok:false,error:p.building+' has no active batch.'};if(p.heads>iv.avail)return{ok:false,error:'Pull-out ('+p.heads+' hd) is more than the inventory in '+p.building+' ('+iv.avail+' hd).'};if(!d.pullouts.some(x=>x.id===p.id))d.pullouts.push(Object.assign({},p,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
+    if(fn==='void'){if(u.role!=='ADMIN')return{ok:false,error:'Only an admin can void entries.'};const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:true};r.voided=true;this.save(d);return{ok:true}}
+    if(fn==='edit'){const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:false,error:'Entry not found.'};const b=farmBad(r.farm);if(b)return{ok:false,error:b};const n=Object.assign({},r,a.fields);if(a.sheet==='Pullouts'){n.heads=['h_u90','h_90_120','h_121_130','h_131'].reduce((s,k)=>s+(+n[k]||0),0);const iv=avail(r.farm,r.building,r.id);if(iv.batch&&n.heads>iv.avail)return{ok:false,error:'Pull-out ('+n.heads+' hd) is more than the inventory ('+iv.avail+' hd).'}}Object.assign(r,n,{edited_at:new Date().toISOString(),edited_by:u.username});this.save(d);return{ok:true}}
+    if(fn==='saveSnapshot'){if(u.role==='MANAGER')return{ok:false,error:'Sup/Manager accounts are view-only.'};if(d.snapshots.some(s=>s.snap_id===a.snap_id))return{ok:true};if(a.kind==='auto'&&d.snapshots.some(s=>s.kind==='auto'&&s.week_key===a.week_key))return{ok:true,skipped:true};const at=a.taken_at||new Date().toISOString();a.rows.forEach(r=>d.snapshots.push(Object.assign({snap_id:a.snap_id,taken_at:at,username:u.username,kind:a.kind,week_key:a.week_key,as_of:a.as_of},r)));this.save(d);return{ok:true}}
     if(fn==='saveSettings'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};if(a.breeds)d.breeds=a.breeds;if(a.farms)d.farms=a.farms;if(a.rules)d.rules=a.rules;(a.renames||[]).forEach(x=>{d.reports.concat(d.pullouts,d.snapshots).forEach(r=>{if(x.type==='farm'&&r.farm===x.from)r.farm=x.to;if(x.type==='breed'&&r.breed===x.from)r.breed=x.to})});this.save(d);return{ok:true}}
     if(fn==='listUsers')return{ok:true,users:d.users.map(x=>({username:x.username,name:x.name,role:x.role,farm:x.farm,active:x.active}))};
     if(fn==='saveUser'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};let x=d.users.find(z=>z.username===a.username);if(!x){if(!a.pin)return{ok:false,error:'Give the new user a starting PIN.'};x={username:a.username};d.users.push(x)}Object.assign(x,{name:a.name,role:a.role,farm:a.farm,active:a.active!==false});if(a.pin)x.pin=String(a.pin);this.save(d);return{ok:true}}
@@ -501,7 +571,7 @@ const demo={
 function demoSeed(){
   const ago=n=>ymd(pd(todayYmd())-n*DAY);
   const R=(farm,building,breed,good,def,wmin,wmax,age,date,user,name)=>({id:uid(),submitted_at:new Date(pd(date)+9*3600e3).toISOString(),username:user,name,farm,building,batch:'',breed,good,defective:def,wmin,wmax,ave_age:age,report_date:date,planned_sale:'',status:'ACTIVE',remarks:''});
-  const K=['kinate','Kinate Grower'],M=['mapayag','Mapayag Grower'],X='3-Way Cross (LW×LR×D)';
+  const K=['kinate','Kinate Recorder'],M=['mapayag','Mapayag Recorder'],X='3-Way Cross (LW×LR×D)';
   const reports=[
     R('Kinate','Bldg 1',X,182,4,90,99,141,ago(12),...K),R('Kinate','Bldg 1',X,180,4,100,109,148,ago(5),...K),
     R('Kinate','Bldg 2',X,200,3,80,89,135,ago(5),...K),R('Kinate','Bldg 3','PIC',160,2,70,79,118,ago(5),...K),
@@ -523,7 +593,7 @@ function demoSeed(){
     const ws=mon-wb*7*DAY,id='demo-snap-'+wb;
     Object.keys(per).forEach(f=>per[f].forEach((h,i)=>{if(!h)return;const w=ws+i*7*DAY;[[0.06,'Under 90',88],[0.86,'90–120',104],[0.08,'121–130',124]].forEach(([s,band,kg])=>{const x=Math.round(h*s);if(x)snapshots.push({snap_id:id,taken_at:new Date(ws+8*3600e3).toISOString(),username:'admin',kind:'auto',week_key:ymd(ws),as_of:ymd(ws),week_start:ymd(w),farm:f,band,heads:x,kg:x*kg})})}))});
   return{
-    users:[{username:'admin',name:'Administrator',role:'ADMIN',farm:'',pin:'1234',active:true},{username:'kinate',name:'Kinate Grower',role:'GROWER',farm:'Kinate',pin:'1111',active:true},{username:'mapayag',name:'Mapayag Grower',role:'GROWER',farm:'Mapayag',pin:'2222',active:true},{username:'viewer',name:'Sales Viewer',role:'VIEWER',farm:'',pin:'0000',active:true}],
+    users:[{username:'admin',name:'Administrator',role:'ADMIN',farm:'',pin:'1234',active:true},{username:'kinate',name:'Kinate Recorder',role:'RECORDER',farm:'Kinate',pin:'1111',active:true},{username:'mapayag',name:'Mapayag Recorder',role:'RECORDER',farm:'Mapayag',pin:'2222',active:true},{username:'manager',name:'Sales Manager',role:'MANAGER',farm:'',pin:'0000',active:true}],
     breeds:[{name:X,adg:0.82,target:110,mort:0.5},{name:'PIC',adg:0.88,target:115,mort:0.5},{name:'Hypor',adg:0.86,target:112,mort:0.5},{name:'Duroc Cross',adg:0.80,target:108,mort:0.6}],
     farms:[{name:'Kinate',factor:1,buildings:'Bldg 1, Bldg 2, Bldg 3, Bldg 4, Bldg 5, Bldg 6'},{name:'Mapayag',factor:0.97,buildings:'Bldg A, Bldg B, Bldg C, Bldg D, Bldg E, Bldg F'}],
     rules:{targetAge:150,flagAge:147,saleWeight:90,spread:2,inclDef:0},
@@ -550,16 +620,21 @@ function apiErr(m){const e=new Error(m==='SESSION_EXPIRED'?'Your session expired
 const EMPTY=()=>({reports:[],pullouts:[],snapshots:[],breeds:[],farms:[],rules:{}});
 let DATA=Object.assign(EMPTY(),ls.get('cache',{}));
 let QUEUE=ls.get('queue',[]);
-const UI={view:'report',gran:'week',groupBy:'band',fFarm:'',fBreed:'',asOf:todayYmd(),invDate:null,rFarm:'',pFarm:'',pType:'SOLD',edit:null,recKind:'active',recSearch:'',cmp:'',aFrom:null,aTo:null,aFarm:'',aBand:'',aBase:'rolling',aTypes:['SOLD','SLAUGHTERED','CONSUMPTION']};
+const UI={view:'report',gran:'week',groupBy:'band',fFarm:'',fBreed:'',asOf:todayYmd(),invDate:null,rFarm:'',pFarm:'',pType:'SOLD',edit:null,recKind:'active',recSearch:'',cmp:'',aFrom:null,aTo:null,aFarm:'',aBand:'',aBase:'rolling',aTypes:['SOLD','SLAUGHTERED','CONSUMPTION'],pBld:''};
 let FS=ls.get('fs',1);document.documentElement.style.setProperty('--fs',FS);
 const ME=()=>SESSION&&SESSION.user;
-const isAdmin=()=>ME()&&ME().role==='ADMIN';
-const canEnter=()=>ME()&&(ME().role==='ADMIN'||ME().role==='GROWER');
+const ROLE_ALIAS={GROWER:'RECORDER',VIEWER:'MANAGER'};
+const ROLE_LABEL={ADMIN:'Admin',RECORDER:'Recorder',MANAGER:'Sup/Manager'};
+const role=()=>{const r=ME()?String(ME().role||'').toUpperCase():'';return ROLE_ALIAS[r]||r};
+const isAdmin=()=>role()==='ADMIN';
+const canEnter=()=>role()==='ADMIN'||role()==='RECORDER';
+const canVoid=()=>role()==='ADMIN';
 
 function pendingOf(fn,key){return QUEUE.filter(q=>q.fn===fn).map(q=>Object.assign({},q.args[key],{_pending:true,username:ME().username,name:ME().name,submitted_at:q.at}))}
 function voidSet(sheet){return new Set(QUEUE.filter(q=>q.fn==='void'&&q.args.sheet===sheet).map(q=>q.args.id))}
-function allReports(){const v=voidSet('Reports');return DATA.reports.concat(pendingOf('submit','report')).filter(r=>!v.has(r.id))}
-function allPullouts(){const v=voidSet('Pullouts');return DATA.pullouts.concat(pendingOf('submitPullout','pullout')).filter(r=>!v.has(r.id))}
+function withEdits(list,sheet){const ed=QUEUE.filter(q=>q.fn==='edit'&&q.args.sheet===sheet);if(!ed.length)return list;return list.map(r=>{const e=ed.filter(q=>q.args.id===r.id);if(!e.length)return r;const o=Object.assign({},r,{_pending:true});e.forEach(q=>Object.assign(o,q.args.fields));if(sheet==='Pullouts')o.heads=sum(BANDS,b=>+o[b.f]||0);return o})}
+function allReports(){const v=voidSet('Reports');return withEdits(DATA.reports.concat(pendingOf('submit','report')),'Reports').filter(r=>!v.has(r.id))}
+function allPullouts(){const v=voidSet('Pullouts');return withEdits(DATA.pullouts.concat(pendingOf('submitPullout','pullout')),'Pullouts').filter(r=>!v.has(r.id))}
 const bkey=r=>(r.farm||'')+'|'+String(r.building||'').trim();
 function latestByBuilding(){const m=new Map();allReports().forEach(r=>{const k=bkey(r),c=m.get(k);if(!c||r.report_date>c.report_date||(r.report_date===c.report_date&&String(r.submitted_at)>String(c.submitted_at)))m.set(k,r)});return[...m.values()]}
 const activeBatches=()=>latestByBuilding().filter(r=>String(r.status||'ACTIVE').toUpperCase()==='ACTIVE'&&(+r.good||0)+(+r.defective||0)>0);
@@ -570,7 +645,7 @@ const rules=()=>{const r=DATA.rules||{};return{targetAge:+r.targetAge||+r.minAge
 const farmNames=()=>[...new Set(DATA.farms.map(f=>f.name).concat(allReports().map(r=>r.farm),allPullouts().map(r=>r.farm)).filter(Boolean))];
 const breedNames=()=>[...new Set(DATA.breeds.map(b=>b.name).concat(allReports().map(r=>r.breed)).filter(Boolean))];
 const buildingsOf=f=>{const rec=farmRec(f);const cfg=rec?String(rec.buildings||'').split(',').map(s=>s.trim()).filter(Boolean):[];const used=allReports().filter(r=>r.farm===f).map(r=>String(r.building||'').trim()).filter(Boolean);return[...new Set(cfg.concat(used))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))};
-const myFarms=()=>{const u=ME();return u.role==='GROWER'&&u.farms&&u.farms.length?u.farms:farmNames()};
+const myFarms=()=>{const u=ME();return role()==='RECORDER'&&u.farms&&u.farms.length?u.farms:farmNames()};
 
 /* ---------- model ---------- */
 function pulledFor(b,t){const rep=b.report_date,tt=ymd(t);return sum(allPullouts().filter(p=>p.farm===b.farm&&String(p.building).trim()===String(b.building).trim()&&p.date>rep&&p.date<=tt),p=>p.heads)}
@@ -618,20 +693,20 @@ function colorFor(dim,key){if(dim==='band')return cssv(BANDS.find(b=>b.k===key).
 
 /* ---------- shell ---------- */
 const VIEWS=[
-  {k:'report',t:'Farm Report',ic:'✍️',roles:['ADMIN','GROWER']},
-  {k:'pullout',t:'Pull-out',ic:'🚚',roles:['ADMIN','GROWER']},
-  {k:'forecast',t:'Forecast',ic:'📈',roles:['ADMIN','GROWER','VIEWER']},
-  {k:'inventory',t:'Inventory',ic:'🐖',roles:['ADMIN','GROWER','VIEWER']},
-  {k:'analysis',t:'Analysis',ic:'📊',roles:['ADMIN','GROWER','VIEWER']},
-  {k:'records',t:'Records',ic:'📋',roles:['ADMIN','GROWER','VIEWER']},
+  {k:'report',t:'Farm Report',ic:'✍️',roles:['ADMIN','RECORDER','MANAGER']},
+  {k:'pullout',t:'Pull-out',ic:'🚚',roles:['ADMIN','RECORDER','MANAGER']},
+  {k:'forecast',t:'Forecast',ic:'📈',roles:['ADMIN','RECORDER','MANAGER']},
+  {k:'inventory',t:'Inventory',ic:'🐖',roles:['ADMIN','RECORDER','MANAGER']},
+  {k:'analysis',t:'Analysis',ic:'📊',roles:['ADMIN','RECORDER','MANAGER']},
+  {k:'records',t:'Records',ic:'📋',roles:['ADMIN','RECORDER','MANAGER']},
   {k:'settings',t:'Settings',ic:'⚙️',roles:['ADMIN']}];
 function renderShell(){
-  const u=ME(),vs=VIEWS.filter(v=>v.roles.includes(u.role));
+  const u=ME(),vs=VIEWS.filter(v=>v.roles.includes(role()));
   if(!vs.some(v=>v.k===UI.view))UI.view=vs[0].k;
   const tabs=$('tabs'),bn=$('bottomNav');tabs.replaceChildren();bn.replaceChildren();
   vs.forEach(v=>{const t=el('button',{class:'tab'+(UI.view===v.k?' active':'')});t.append(el('span',{class:'ic'},v.ic),document.createTextNode(v.t));t.onclick=()=>go(v.k);tabs.append(t);
     const b=el('button',{class:UI.view===v.k?'active':''});b.append(el('span',{class:'ic'},v.ic),el('span',null,v.t));b.onclick=()=>go(v.k);bn.append(b)});
-  $('who').replaceChildren(document.createTextNode('👤 '),el('b',null,u.name),document.createTextNode(' · '+u.role+(u.farms&&u.farms.length?' · '+u.farms.join(', '):'')));
+  $('who').replaceChildren(document.createTextNode('👤 '),el('b',null,u.name),document.createTextNode(' · '+(ROLE_LABEL[role()]||role())+(u.farms&&u.farms.length?' · '+u.farms.join(', '):'')));
   $$('.view').forEach(s=>s.classList.toggle('hidden',s.id!=='v-'+UI.view));
   $('demoBar').classList.toggle('hidden',!DEMO);
   $('snapNow').classList.toggle('hidden',!canEnter());
@@ -648,137 +723,213 @@ function fillFilters(){$$('.fFarm').forEach(s=>fillSel(s,farmNames(),UI.fFarm));
 function kpi(box,k,v,n,cls){const d=el('div',{class:'kpi '+(cls||'')});d.append(el('div',{class:'k'},k),el('div',{class:'v'},v),el('div',{class:'n'},n||''));box.append(d)}
 
 /* ---------- FARM REPORT ---------- */
+function availFor(farm,bn,excludeId){
+  const b=activeBatches().find(x=>x.farm===farm&&String(x.building).trim()===String(bn).trim());
+  if(!b)return{b:null,avail:0};
+  const pulled=sum(allPullouts().filter(p=>p.id!==excludeId&&p.farm===farm&&String(p.building).trim()===String(bn).trim()&&p.date>b.report_date),p=>p.heads);
+  return{b,avail:Math.max(0,(+b.good||0)+(+b.defective||0)-pulled)};
+}
+function lockForm(formId,bannerId){const ro=!canEnter();$(formId).classList.toggle('locked',ro);$(bannerId).classList.toggle('hidden',!ro);$$('#'+formId+' input,#'+formId+' select,#'+formId+' button').forEach(x=>{if(ro)x.disabled=true})}
 function renderReport(){
   const farms=myFarms();if(!farms.includes(UI.rFarm))UI.rFarm=farms[0]||'';
   fillSel('rFarm',farms,UI.rFarm,null);$('rFarm').disabled=farms.length<2;
   const curB=$('r_building').value;
-  fillSel('r_building',[{v:'',t:'— choose —'}].concat(buildingsOf(UI.rFarm).map(b=>({v:b,t:b}))).concat([{v:'__new',t:'➕ Other building…'}]),curB,null);
+  fillSel('r_building',[{v:'',t:'— choose —'}].concat(buildingsOf(UI.rFarm).map(b=>({v:b,t:b}))).concat(canEnter()?[{v:'__new',t:'➕ Other building…'}]:[]),curB,null);
   fillSel('r_breed',[{v:'',t:'— choose —'}].concat(breedNames().map(b=>({v:b,t:b}))),$('r_breed').value,null);
   fillSel('r_wrange',[{v:'',t:'— choose —'}].concat(WR.map((r,i)=>({v:i,t:r.label}))),$('r_wrange').value,null);
   if(!$('r_report_date').value)$('r_report_date').value=todayYmd();
-  renderBuildings();renderMyReports();updateAuto();
+  renderBuildings();renderMyReports();updateAuto();lockForm('rForm','rViewOnly');
+}
+function tileFor(bn,farm,opts){
+  const T=pd(todayYmd()),{b,avail}=availFor(farm,bn);
+  const tile=el(opts.pick?'button':'div',{class:'tile',type:opts.pick?'button':null});
+  if(!b){tile.classList.add('empty');const tt=el('div',{class:'tt'});tt.append(el('span',null,bn),el('span',{class:'badge b-grow'},'Empty'));tile.append(tt,el('div',{class:'meta'},'No active batch'));
+    if(opts.actions&&canEnter()){const a=el('div',{class:'acts'}),nb=el('button',{class:'btn sm',type:'button'},'+ New batch');nb.onclick=()=>pickBuilding(bn);a.append(nb);tile.append(a)}
+    if(opts.pick)tile.disabled=true;return tile}
+  const M=model(b,todayYmd()),s=M.at(T),st=statusAt(M,T);tile.classList.add('t-'+st.k);
+  const tt=el('div',{class:'tt'}),bd=el('span');bd.append(el('span',{class:'badge '+st.cls},st.t));if(b._pending)bd.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));tt.append(el('span',null,bn),bd);tile.append(tt);
+  tile.append(el('div',{class:'meta br'},b.breed));
+  const nums=el('div',{class:'nums'});[['Heads',fmt(avail)],['Wt','~'+fmt(s.mean)+'kg'],['Age',fmt(s.age)+'d']].forEach(([k,v])=>{const d=el('div');d.append(el('div',{class:'k'},k),el('div',{class:'v'},v));nums.append(d)});tile.append(nums);
+  tile.append(el('div',{class:'meta pl'},'Sale '+niceY(M.natural)+' · rep. '+nice(pd(b.report_date))));
+  if(opts.actions&&canEnter()){const a=el('div',{class:'acts'});
+    const up=el('button',{class:'btn primary sm',type:'button'},'Update');up.onclick=()=>pickBuilding(bn);
+    const po=el('button',{class:'btn outline sm',type:'button'},'Pull-out');po.onclick=()=>{UI.pFarm=farm;UI.pBld=bn;go('pullout')};
+    const cl=el('button',{class:'btn sm',type:'button'},'Close');cl.title='Sold out / empty';cl.onclick=()=>closeBatch(b);
+    a.append(up,po,cl);tile.append(a)}
+  return tile;
 }
 function renderBuildings(){
-  const t=$('bldTbl');t.replaceChildren();const today=todayYmd(),T=pd(today);
-  const act=new Map(activeBatches().filter(b=>b.farm===UI.rFarm).map(b=>[String(b.building).trim(),b]));
-  const blds=buildingsOf(UI.rFarm);
-  thead(t,['Building','Breed','Heads now','Weight','Age today','Planned sale','Status',''],[2,4]);const tb=el('tbody');
-  if(!blds.length)empty(tb,8,'No buildings set up for this farm yet. An admin can add them in Settings, or choose "Other building…" in the form.');
-  let n=0;
-  blds.forEach(bn=>{const b=act.get(bn),tr=el('tr');
-    if(!b){cellTd(tr,'',bn,'head');cellTd(tr,'Breed','—');cellTd(tr,'Heads now','—','n');cellTd(tr,'Weight','—');cellTd(tr,'Age today','—','n');cellTd(tr,'Planned sale','—');cellTd(tr,'Status',el('span',{class:'badge b-grow'},'Empty'));
-      const a=el('span');const nb=el('button',{class:'btn sm'},'New batch');nb.onclick=()=>pickBuilding(bn);a.append(nb);cellTd(tr,'',a,'act');tb.append(tr);return}
-    n++;const M=model(b,today),s=M.at(T),st=statusAt(M,T),now=Math.max(0,M.H0-pulledFor(b,T));
-    cellTd(tr,'',bn,'head');cellTd(tr,'Breed',b.breed);cellTd(tr,'Heads now',fmt(now),'n');
-    const wi=wrIndex(b.wmin,b.wmax);cellTd(tr,'Weight',(wi>=0?WR[wi].label:fmt(b.wmin)+'–'+fmt(b.wmax)+' kg')+' · ~'+fmt(s.mean)+' now');
-    cellTd(tr,'Age today',fmt(s.age)+' d','n');cellTd(tr,'Planned sale',niceY(M.natural));
-    const sp=el('span');sp.append(el('span',{class:'badge '+st.cls},st.t));if(b._pending)sp.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));cellTd(tr,'Status',sp);
-    const a=el('span',{style:'display:flex;gap:4px;flex-wrap:wrap'});
-    const up=el('button',{class:'btn primary sm'},'Update');up.onclick=()=>pickBuilding(bn);
-    const po=el('button',{class:'btn outline sm'},'Pull-out');po.onclick=()=>{UI.pFarm=b.farm;go('pullout');$('p_building').value=bn;updatePAuto()};
-    const cl=el('button',{class:'btn sm'},'Close');cl.title='Sold out / empty';cl.onclick=()=>closeBatch(b);
-    a.append(up,po,cl);cellTd(tr,'',a,'act');tb.append(tr)});
-  t.append(tb);$('bldCount').textContent=n+' active of '+blds.length;
+  const box=$('bldTiles');box.replaceChildren();const blds=buildingsOf(UI.rFarm);
+  if(!blds.length)box.append(el('div',{class:'hint'},'No buildings set up for this farm yet. An admin adds them in Settings'+(canEnter()?', or choose "Other building…" in the form below.':'.')));
+  let n=0,h=0;blds.forEach(bn=>{const {b,avail}=availFor(UI.rFarm,bn);if(b){n++;h+=avail}box.append(tileFor(bn,UI.rFarm,{actions:true}))});
+  $('bldCount').textContent=UI.rFarm+' · '+n+' active of '+blds.length+' buildings · '+fmt(h)+' heads';
 }
-function pickBuilding(bn){$('r_building').value=bn;$('r_building_new').classList.add('hidden');onBuildingChange();$('formCard').scrollIntoView({behavior:'smooth',block:'start'})}
+function pickBuilding(bn){if(!canEnter())return;$('r_building').value=bn;$('r_building_new').classList.add('hidden');onBuildingChange();$('formCard').scrollIntoView({behavior:'smooth',block:'start'})}
 function curBuilding(){const v=$('r_building').value;return v==='__new'?$('r_building_new').value.trim():v}
 function onBuildingChange(){
   const v=$('r_building').value;$('r_building_new').classList.toggle('hidden',v!=='__new');if(v==='__new')$('r_building_new').focus();
   const bn=curBuilding(),b=activeBatches().find(x=>x.farm===UI.rFarm&&String(x.building).trim()===bn);
   UI.edit=b||null;
   if(b){const days=Math.max(0,Math.round((pd($('r_report_date').value||todayYmd())-pd(b.report_date))/DAY));
-    $('r_breed').value=b.breed;$('r_ave_age').value=(+b.ave_age||0)+days;$('r_good').value=Math.max(0,(+b.good||0)-pulledFor(b,pd(todayYmd())));$('r_defective').value=b.defective||0;
+    const pulled=sum(allPullouts().filter(p=>p.farm===b.farm&&String(p.building).trim()===bn&&p.date>b.report_date),p=>p.heads);
+    const good=Math.max(0,(+b.good||0)-pulled),def=+b.defective||0;
+    $('r_breed').value=b.breed;$('r_ave_age').value=(+b.ave_age||0)+days;$('r_good').value=good;$('r_defective').value=def;
     const M=model(b,todayYmd()),s=M.at(pd(todayYmd()));let wi=WR.findIndex(r=>s.mean>=r.a&&s.mean<=r.b+0.99);if(wi<0)wi=wrIndex(b.wmin,b.wmax);$('r_wrange').value=wi>=0?wi:'';$('r_remarks').value='';
   }else{['r_ave_age','r_good','r_remarks'].forEach(id=>$(id).value='');$('r_defective').value=0;$('r_wrange').value=''}
   $('formTitle').textContent=b?'Update '+bn:'Farm report';updateAuto();
 }
 function formVals(){const wi=$('r_wrange').value,r=wi===''?null:WR[+wi];const n=id=>$(id).value===''?'':+$(id).value;
   return{report_date:$('r_report_date').value,building:curBuilding(),breed:$('r_breed').value,ave_age:n('r_ave_age'),good:n('r_good'),defective:n('r_defective')||0,wmin:r?r.a:'',wmax:r?r.b:'',remarks:$('r_remarks').value.trim()}}
-function validate(v){
+function validate(v,isUpdate){
   if(!UI.rFarm)return'Choose a farm.';if(!v.report_date)return'Enter the report date.';
   if(pd(v.report_date)>pd(todayYmd()))return'Report date cannot be in the future.';
   if(!v.building)return'Choose the building.';if(!v.breed)return'Choose the breed / line.';
   if(v.ave_age===''||v.ave_age<20||v.ave_age>400)return'Average age looks wrong (20–400 days).';
   if(v.wmin==='')return'Choose the weight range.';
   if(v.good===''||v.good<0)return'Enter good heads.';
-  if(!UI.edit&&!(v.good>0))return'A new batch needs at least 1 good head.';
+  if(!isUpdate&&!(v.good>0))return'A new batch needs at least 1 good head.';
   return'';
 }
 function updateAuto(){
   const v=formVals(),box=$('rAuto'),mode=$('rMode');box.replaceChildren();
   if(UI.edit){mode.className='modenote';mode.textContent='Updating '+v.building+' — last report '+niceY(pd(UI.edit.report_date))+(UI.edit.name?' by '+UI.edit.name:'')+'. Age moved up to today; heads less pull-outs since then.'}
-  else{mode.className='modenote new';mode.textContent=v.building?'New batch in '+v.building+'.':'Choose a building — buildings with a batch fill in from the last report.'}
+  else{mode.className='modenote new';mode.textContent=v.building?'New batch in '+v.building+'.':'Choose a building, or tap Update on a building above.'}
   const R=rules();
-  if(v.ave_age===''||v.wmin===''||!v.breed||!v.report_date){box.append(el('span',{class:'hint'},'Planned sale date fills in automatically from age and weight (target '+R.targetAge+' d, flag at '+R.flagAge+' d, or when avg weight ≥ '+R.saleWeight+' kg).'));return}
+  if(v.ave_age===''||v.wmin===''||!v.breed||!v.report_date){box.append(el('span',{class:'hint'},'Planned sale date fills in automatically (target '+R.targetAge+' d, flag at '+R.flagAge+' d, or when avg weight ≥ '+R.saleWeight+' kg).'));return}
   const M=model(Object.assign({farm:UI.rFarm},v),todayYmd()),T=pd(todayYmd()),st=statusAt(M,T);
   const item=(lab,val)=>{const d=el('div');d.append(el('div',{class:'lab'},lab),el('div',{style:'font-weight:700'},val));box.append(d)};
-  item('Planned sale date',niceY(M.natural));
-  item('Reason',M.byWeight?'Avg weight reaches '+R.saleWeight+' kg':'Reaches '+R.targetAge+' days');
-  item('Flag date ('+R.flagAge+' d)',niceY(M.flagDate));
+  item('Planned sale date',niceY(M.natural));item('Reason',M.byWeight?'Avg weight reaches '+R.saleWeight+' kg':'Reaches '+R.targetAge+' days');item('Flag date ('+R.flagAge+' d)',niceY(M.flagDate));
   const s=document.createElement('div');s.append(el('div',{class:'lab'},'Status today'),el('span',{class:'badge '+st.cls},st.t));box.append(s);
 }
 function queuePush(fn,args,label){QUEUE.push({id:uid(),fn,args,at:new Date().toISOString(),label});ls.set('queue',QUEUE);renderPend();flush(true)}
 function closeBatch(b){
-  const body=el('div');body.append(el('p',{style:'margin-top:0'},'Mark '+b.building+' ('+b.farm+') as sold out / empty? It will drop out of the forecast. Record the last pull-out first if you have not.'));
+  if(!canEnter())return;
+  const {avail}=availFor(b.farm,b.building);
+  const body=el('div');body.append(el('p',{style:'margin-top:0'},'Mark '+b.building+' ('+b.farm+') as sold out / empty? It drops out of the forecast.'));
+  if(avail>0)body.append(el('p',{class:'err'},avail+' head(s) are still recorded in this building. Record the last pull-out first so the analysis is complete.'));
   const inp=el('input',{placeholder:'Remarks (optional)'});body.append(el('label',{class:'f'},'Remarks'),inp);
   modal('Close building batch',body,[{text:'Cancel'},{text:'Mark sold out',cls:'primary',onClick:()=>{
     const o={};['farm','building','batch','breed','wmin','wmax','ave_age'].forEach(k=>o[k]=b[k]);
     queuePush('submit',{report:Object.assign(o,{id:uid(),report_date:todayYmd(),status:'SOLD',good:0,defective:0,planned_sale:'',remarks:inp.value.trim()})});renderView();toast('Batch closed.')}}]);
 }
+function entryActions(sheet,r){
+  const a=el('div',{class:'acts'});if(r._pending)return a;
+  if(canEnter()&&(isAdmin()||myFarms().includes(r.farm))){const e=el('button',{class:'btn sm',type:'button'},'Edit');e.onclick=()=>sheet==='Reports'?editReport(r):editPullout(r);a.append(e)}
+  if(canVoid()){const v=el('button',{class:'btn danger sm',type:'button'},'Void');v.onclick=()=>voidEntry(sheet,r,sheet==='Reports'?r.building+' report of '+niceY(pd(r.report_date)):r.type.toLowerCase()+' pull-out of '+r.heads+' hd ('+niceY(pd(r.date))+')');a.append(v)}
+  return a;
+}
 function renderMyReports(){
-  const t=$('myReports');t.replaceChildren();const u=ME();
-  const list=allReports().filter(r=>r.farm===UI.rFarm&&(isAdmin()||r.username===u.username)).sort((a,b)=>String(b.submitted_at).localeCompare(String(a.submitted_at))).slice(0,10);
-  thead(t,['Building','Report date','Breed','Good','Def.','Weight','Age','Planned sale','Status','By',''],[3,4,6]);const tb=el('tbody');
-  if(!list.length)empty(tb,11,'No reports yet.');
-  list.forEach(r=>{const tr=el('tr');cellTd(tr,'',r.building,'head');cellTd(tr,'Report date',niceY(pd(r.report_date)));cellTd(tr,'Breed',r.breed);cellTd(tr,'Good',fmt(r.good),'n');cellTd(tr,'Def.',fmt(r.defective),'n');
-    cellTd(tr,'Weight',fmt(r.wmin)+'–'+fmt(r.wmax)+' kg');cellTd(tr,'Age',fmt(r.ave_age)+' d','n');cellTd(tr,'Planned sale',r.planned_sale?niceY(pd(r.planned_sale)):'—');
-    const st=String(r.status||'ACTIVE').toUpperCase();cellTd(tr,'Status',el('span',{class:'badge '+(r._pending?'b-pend':st==='SOLD'?'b-sold':'b-grow')},r._pending?'Not synced':st));cellTd(tr,'By',r.name||r.username||'');
-    const a=el('span');if(!r._pending){const v=el('button',{class:'btn danger sm'},'Void');v.onclick=()=>voidEntry('Reports',r,r.building+' report of '+niceY(pd(r.report_date)));a.append(v)}cellTd(tr,'',a,'act');tb.append(tr)});
-  t.append(tb);
+  const box=$('myReports');box.replaceChildren();
+  const list=allReports().filter(r=>r.farm===UI.rFarm).sort((a,b)=>String(b.submitted_at).localeCompare(String(a.submitted_at))).slice(0,15);
+  $('recentLab').textContent=UI.rFarm+' · last '+list.length;
+  if(!list.length)box.append(el('div',{class:'hint'},'No reports yet.'));
+  list.forEach(r=>{const it=el('div',{class:'it'}),st=String(r.status||'ACTIVE').toUpperCase();
+    const l1=el('div',{class:'l1'});l1.append(el('span',null,r.building+' · '+niceY(pd(r.report_date))),el('span',{class:'badge '+(r._pending?'b-pend':st==='SOLD'?'b-sold':'b-grow')},r._pending?'Not synced':st==='SOLD'?'Closed':'Report'));it.append(l1);
+    it.append(el('div',{class:'l2'},r.breed+' · '+fmt(r.good)+' good / '+fmt(r.defective)+' def · '+fmt(r.wmin)+'–'+fmt(r.wmax)+' kg · '+fmt(r.ave_age)+' d'+(r.planned_sale?' · sale '+nice(pd(r.planned_sale)):'')));
+    it.append(el('div',{class:'l2'},'By '+(r.name||r.username||'—')+(r.remarks?' · '+r.remarks:'')));
+    if(r.edited_at)it.append(el('div',{class:'edited'},'✎ edited '+new Date(r.edited_at).toLocaleString()+(r.edited_by?' by '+r.edited_by:'')));
+    it.append(entryActions('Reports',r));box.append(it)});
 }
 function voidEntry(sheet,r,what){
+  if(!canVoid())return;
   const body=el('div');body.append(el('p',{style:'margin-top:0'},'Void '+what+'? It stays in the sheet marked voided (for tracing).'));
   const inp=el('input',{placeholder:'Reason (e.g. wrong count)'});body.append(el('label',{class:'f'},'Reason'),inp);
   modal('Void entry',body,[{text:'Cancel'},{text:'Void',cls:'danger',onClick:()=>{queuePush('void',{sheet,id:r.id,reason:inp.value.trim()});renderView()}}]);
 }
+function fld(body,lab,node,cls){const d=el('div',{class:cls||''});d.append(el('label',{class:'f'},lab),node);body.append(d);return node}
+function editReport(r){
+  const body=el('div',{class:'fgrid'});
+  const dt=fld(body,'Report date',el('input',{type:'date'}));dt.value=r.report_date;
+  const br=fld(body,'Breed',el('select'));fillSel(br,breedNames(),r.breed,null);
+  const ag=fld(body,'Ave. age (d)',el('input',{type:'number',inputmode:'numeric'}));ag.value=r.ave_age;
+  const wr=fld(body,'Weight range',el('select'));fillSel(wr,WR.map((x,i)=>({v:i,t:x.label})),wrIndex(r.wmin,r.wmax),null);
+  const gd=fld(body,'Good heads',el('input',{type:'number',inputmode:'numeric'}));gd.value=r.good;
+  const df=fld(body,'Defective',el('input',{type:'number',inputmode:'numeric'}));df.value=r.defective;
+  const rm=fld(body,'Remarks',el('input'),'s4');rm.value=r.remarks||'';
+  const er=el('div',{class:'err s4'});body.append(er);
+  modal('Edit report — '+r.farm+' · '+r.building,body,[{text:'Cancel'},{text:'Save changes',cls:'primary',onClick:()=>{
+    const w=WR[+wr.value],v={report_date:dt.value,building:r.building,breed:br.value,ave_age:ag.value===''?'':+ag.value,good:gd.value===''?'':+gd.value,defective:+df.value||0,wmin:w?w.a:'',wmax:w?w.b:'',remarks:rm.value.trim()};
+    const save=UI.rFarm;UI.rFarm=r.farm;const bad=validate(v,true);UI.rFarm=save;if(bad){er.textContent=bad;return false}
+    const M=model(Object.assign({farm:r.farm},v),todayYmd());
+    queuePush('edit',{sheet:'Reports',id:r.id,fields:Object.assign({},v,{planned_sale:String(r.status||'ACTIVE').toUpperCase()==='ACTIVE'?ymd(M.natural):''})});renderView();toast('Report updated.')}}]);
+}
+function editPullout(p){
+  const {avail}=availFor(p.farm,p.building,p.id);
+  const body=el('div',{class:'fgrid'});
+  const dt=fld(body,'Date',el('input',{type:'date'}));dt.value=p.date;
+  const ty=fld(body,'Type',el('select'));fillSel(ty,PTYPES.map(t=>({v:t.k,t:t.t})),p.type,null);
+  const ins=BANDS.map(b=>{const i=fld(body,b.k+' kg',el('input',{type:'number',inputmode:'numeric',min:'0'}));i.value=+p[b.f]||0;return i});
+  const kg=fld(body,'Live kg',el('input',{type:'number',step:'0.1'}));kg.value=p.kg===''||p.kg==null?'':p.kg;
+  const rf=fld(body,'Ref. no.',el('input'));rf.value=p.ref_no||'';
+  const cu=fld(body,'Customer / notes',el('input'),'s4');cu.value=p.customer||'';
+  const rm=fld(body,'Remarks',el('input'),'s4');rm.value=p.remarks||'';
+  const info=el('div',{class:'hint s4'},'Inventory available for this pull-out: '+fmt(avail)+' hd (in '+p.building+').');const er=el('div',{class:'err s4'});body.append(info,er);
+  modal('Edit pull-out — '+p.farm+' · '+p.building,body,[{text:'Cancel'},{text:'Save changes',cls:'primary',onClick:()=>{
+    const f={date:dt.value,type:ty.value,kg:kg.value===''?'':+kg.value,ref_no:rf.value.trim(),customer:cu.value.trim(),remarks:rm.value.trim()};BANDS.forEach((b,i)=>f[b.f]=+ins[i].value||0);
+    const h=sum(BANDS,b=>f[b.f]);
+    if(!f.date||pd(f.date)>pd(todayYmd())){er.textContent='Check the date.';return false}
+    if(h<=0){er.textContent='Enter at least one head.';return false}
+    if(availFor(p.farm,p.building).b&&h>avail){er.textContent='Pull-out ('+h+' hd) is more than the inventory ('+avail+' hd).';return false}
+    queuePush('edit',{sheet:'Pullouts',id:p.id,fields:f});renderView();toast('Pull-out updated.')}}]);
+}
 
 /* ---------- PULL-OUT ---------- */
+const CUST_LAB={SOLD:['Customer / buyer','e.g. volume buyer, walk-in'],SLAUGHTERED:['Slaughterhouse','e.g. Kinate Slaughterhouse'],CONSUMPTION:['Consumed by','e.g. employee meat, event'],MORTALITY:['Cause / notes','e.g. heat stress']};
 function renderPullout(){
   const farms=myFarms();if(!farms.includes(UI.pFarm))UI.pFarm=UI.rFarm&&farms.includes(UI.rFarm)?UI.rFarm:farms[0]||'';
   fillSel('pFarm',farms,UI.pFarm,null);$('pFarm').disabled=farms.length<2;
-  const act=new Set(activeBatches().filter(b=>b.farm===UI.pFarm).map(b=>String(b.building).trim()));
-  fillSel('p_building',[{v:'',t:'— choose —'}].concat(buildingsOf(UI.pFarm).map(b=>({v:b,t:b+(act.has(b)?'':' (no active batch)')}))),$('p_building').value,null);
   if(!$('p_date').value)$('p_date').value=todayYmd();
-  $$('#pType button').forEach(b=>b.classList.toggle('on',b.dataset.t===UI.pType));
-  $('pCustLab').textContent=UI.pType==='MORTALITY'?'Cause / notes':UI.pType==='CONSUMPTION'?'Consumed by (e.g. employee meat, event)':UI.pType==='SLAUGHTERED'?'Slaughterhouse':'Customer / buyer';
-  if(!$('pBands').children.length){BANDS.forEach(b=>{const d=el('div'),l=el('label',{class:'f'}),i=el('i');i.style.background=cssv(b.c);l.append(i,document.createTextNode(b.k+' kg'));const inp=el('input',{type:'number',inputmode:'numeric',min:'0',id:'p_'+b.f,placeholder:'0'});d.append(l,inp);$('pBands').append(d)})}
-  updatePAuto();renderPList();
+  $$('#pType .type').forEach(b=>b.classList.toggle('on',b.dataset.t===UI.pType));
+  $('pCustLab').textContent=CUST_LAB[UI.pType][0];$('p_customer').placeholder=CUST_LAB[UI.pType][1];
+  const box=$('pTiles');box.replaceChildren();const blds=buildingsOf(UI.pFarm);
+  if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b)UI.pBld='';
+  if(!blds.length)box.append(el('div',{class:'hint'},'No buildings for this farm yet.'));
+  blds.forEach(bn=>{const t=tileFor(bn,UI.pFarm,{pick:true});if(bn===UI.pBld)t.classList.add('sel');if(!t.disabled)t.onclick=()=>{UI.pBld=bn;renderPullout()};box.append(t)});
+  $('p_building').value=UI.pBld||'';
+  if(!$('pBands').children.length){BANDS.forEach(b=>{const d=el('div',{class:'bandbox'}),l=el('div',{class:'bl'}),i=el('i');i.style.background=cssv(b.c);l.append(i,document.createTextNode(b.k+' kg'));
+    const st=el('div',{class:'stepper'}),mi=el('button',{type:'button','aria-label':'minus'},'−'),inp=el('input',{type:'number',inputmode:'numeric',min:'0',id:'p_'+b.f,placeholder:'0'}),pl=el('button',{type:'button','aria-label':'plus'},'+');
+    mi.onclick=()=>{inp.value=Math.max(0,(+inp.value||0)-1)||'';updatePAuto()};pl.onclick=()=>{inp.value=(+inp.value||0)+1;updatePAuto()};
+    st.append(mi,inp,pl);d.append(l,el('div',{class:'est',id:'pest_'+b.f},' '),st);$('pBands').append(d)})}
+  updatePAuto();renderPList();lockForm('pForm','pViewOnly');
 }
-function pVals(){const o={date:$('p_date').value,farm:UI.pFarm,building:$('p_building').value,type:UI.pType,customer:$('p_customer').value.trim(),ref_no:$('p_ref_no').value.trim(),remarks:$('p_remarks').value.trim(),kg:$('p_kg').value===''?'':+$('p_kg').value};BANDS.forEach(b=>o[b.f]=+$('p_'+b.f).value||0);o.heads=sum(BANDS,b=>o[b.f]);return o}
+function pVals(){const o={date:$('p_date').value,farm:UI.pFarm,building:UI.pBld||'',type:UI.pType,customer:$('p_customer').value.trim(),ref_no:$('p_ref_no').value.trim(),remarks:$('p_remarks').value.trim(),kg:$('p_kg').value===''?'':+$('p_kg').value};BANDS.forEach(b=>o[b.f]=Math.max(0,Math.round(+$('p_'+b.f).value||0)));o.heads=sum(BANDS,b=>o[b.f]);return o}
+function pCheck(v){
+  if(!v.building)return'Tap the building the hogs came from.';
+  const {b,avail}=availFor(v.farm,v.building);
+  if(!b)return v.building+' has no active batch.';
+  if(!v.date)return'Enter the date.';if(pd(v.date)>pd(todayYmd()))return'Date cannot be in the future.';
+  if(!(v.heads>0))return'Enter heads in at least one weight category.';
+  if(v.heads>avail)return'Not allowed: '+v.heads+' hd is more than the '+avail+' hd in '+v.building+'. Check the count, or update the farm report first.';
+  return'';
+}
 function updatePAuto(){
-  const v=pVals();$('p_heads').value=v.heads||'';const box=$('pAuto');box.replaceChildren();
-  const b=activeBatches().find(x=>x.farm===UI.pFarm&&String(x.building).trim()===v.building);
-  if(!v.building){box.append(el('span',{class:'hint'},'Choose the building the hogs came from.'));return}
-  if(!b){box.append(el('span',{class:'hint'},'No active batch in '+v.building+'. The pull-out is still saved for the analysis.'));return}
-  const T=pd(v.date||todayYmd()),now=Math.max(0,b.good-pulledFor(b,T));
-  const item=(lab,val)=>{const d=el('div');d.append(el('div',{class:'lab'},lab),el('div',{style:'font-weight:700'},val));box.append(d)};
-  item('Heads in building',fmt(now));item('After this pull-out',fmt(now-v.heads));if(v.heads&&v.kg)item('Avg live wt',fmt1(v.kg/v.heads)+' kg');
-  if(v.heads>now)box.append(el('span',{class:'err'},'More heads than recorded in the building — check the count or update the farm report.'));
+  const v=pVals(),box=$('pSum');box.replaceChildren();box.classList.remove('over');
+  const {b,avail}=v.building?availFor(v.farm,v.building):{b:null,avail:0};
+  BANDS.forEach(bd=>{const e=$('pest_'+bd.f);if(e)e.textContent=' '});
+  if(b){const M=model(b,todayYmd()),s=M.at(pd(v.date||todayYmd())),sh=bandShares(s.mean,s.sd);BANDS.forEach((bd,i)=>{const e=$('pest_'+bd.f);if(e)e.textContent='est. in bldg ~'+fmt(avail*sh[i])})}
+  const g=el('div',{class:'sg'}),it=(k,val,cls)=>{const d=el('div');d.append(el('div',{class:'k'},k),el('div',{class:'v '+(cls||'')},val));g.append(d)};
+  it('Building',v.building||'—');it('In building',b?fmt(avail)+' hd':'—');it('This pull-out',fmt(v.heads)+' hd');it('Remaining',b?fmt(avail-v.heads)+' hd':'—');box.append(g);
+  if(b){const m=el('div',{class:'meter'}),f=el('div');f.style.width=Math.min(100,avail?v.heads/avail*100:0)+'%';m.append(f);box.append(m)}
+  if(v.heads&&v.kg)box.append(el('div',{class:'hint',style:'margin-top:6px'},'Avg live weight: '+fmt1(v.kg/v.heads)+' kg/head'));
+  const over=b&&v.heads>avail;box.classList.toggle('over',!!over);
+  $('pErr').textContent=over?pCheck(v):'';
+  $('pSubmit').disabled=!canEnter()||!b||!(v.heads>0)||over;
+  $('pSubmit').textContent=v.heads>0?'Save '+(PTYPES.find(p=>p.k===v.type)||{}).t.toLowerCase()+' · '+v.heads+' hd':'Save pull-out';
 }
 function renderPList(){
-  const t=$('pList');t.replaceChildren();const u=ME(),wk=monday(pd(todayYmd()));
-  const all=allPullouts().filter(p=>p.farm===UI.pFarm);
-  const week=all.filter(p=>pd(p.date)>=wk&&pd(p.date)<wk+7*DAY);
+  const box=$('pList');box.replaceChildren();const wk=monday(pd(todayYmd()));
+  const all=allPullouts().filter(p=>p.farm===UI.pFarm),week=all.filter(p=>pd(p.date)>=wk&&pd(p.date)<wk+7*DAY);
   $('pWeekLab').textContent=UI.pFarm+' · '+nice(wk)+' – '+nice(wk+6*DAY);
   const k=$('pKpis');k.replaceChildren();PTYPES.forEach(pt=>kpi(k,pt.t,fmt(sum(week.filter(p=>p.type===pt.k),p=>p.heads)),'heads',pt.k==='MORTALITY'?'bad':''));
-  const list=all.filter(p=>isAdmin()||p.username===u.username).sort((a,b)=>(b.date+b.submitted_at).localeCompare(a.date+a.submitted_at)).slice(0,25);
-  thead(t,['Date','Building','Type','Heads','Mix','Kg','Customer / notes',''],[3,5]);const tb=el('tbody');
-  if(!list.length)empty(tb,8,'No pull-outs yet.');
-  list.forEach(p=>{const tr=el('tr');cellTd(tr,'',niceY(pd(p.date))+' · '+p.building,'head');cellTd(tr,'Building',p.building);
-    const ty=el('span');ty.append(el('span',{class:'badge b-'+p.type},(PTYPES.find(x=>x.k===p.type)||{t:p.type}).t));if(p._pending)ty.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));cellTd(tr,'Type',ty);
-    cellTd(tr,'Heads',fmt(p.heads),'n');cellTd(tr,'Mix',BANDS.filter(b=>+p[b.f]).map(b=>b.k+': '+p[b.f]).join(' · '));cellTd(tr,'Kg',p.kg?fmt(p.kg):'—','n');cellTd(tr,'Customer / notes',p.customer||p.remarks||'');
-    const a=el('span');if(!p._pending){const v=el('button',{class:'btn danger sm'},'Void');v.onclick=()=>voidEntry('Pullouts',p,p.type.toLowerCase()+' pull-out of '+p.heads+' hd ('+niceY(pd(p.date))+')');a.append(v)}cellTd(tr,'',a,'act');tb.append(tr)});
-  t.append(tb);
+  const list=all.sort((a,b)=>(b.date+b.submitted_at).localeCompare(a.date+a.submitted_at)).slice(0,20);
+  if(!list.length)box.append(el('div',{class:'hint'},'No pull-outs yet.'));
+  list.forEach(p=>{const it=el('div',{class:'it'}),l1=el('div',{class:'l1'});
+    const ty=el('span');ty.append(el('span',{class:'badge b-'+p.type},(PTYPES.find(x=>x.k===p.type)||{t:p.type}).t));if(p._pending)ty.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));
+    l1.append(el('span',null,niceY(pd(p.date))+' · '+p.building+' · '+fmt(p.heads)+' hd'),ty);it.append(l1);
+    it.append(el('div',{class:'l2'},BANDS.filter(b=>+p[b.f]).map(b=>b.k+': '+p[b.f]).join(' · ')+(p.kg?' · '+fmt(p.kg)+' kg':'')));
+    const who=[p.customer,p.ref_no?'Ref '+p.ref_no:'',p.name?'by '+p.name:''].filter(Boolean).join(' · ');if(who)it.append(el('div',{class:'l2'},who));
+    if(p.edited_at)it.append(el('div',{class:'edited'},'✎ edited '+new Date(p.edited_at).toLocaleString()+(p.edited_by?' by '+p.edited_by:'')));
+    it.append(entryActions('Pullouts',p));box.append(it)});
 }
 
 /* ---------- FORECAST ---------- */
@@ -1007,16 +1158,16 @@ async function saveSettings(){
 async function loadUsers(){
   const t=$('userTbl');t.replaceChildren();const tb0=el('tbody');empty(tb0,1,'Loading users…');t.append(tb0);
   try{const r=await api('listUsers',{});t.replaceChildren();thead(t,['Name','Username','Role','Farm','Active','']);const tb=el('tbody');
-    r.users.forEach(u=>{const tr=el('tr');cellTd(tr,'',u.name,'head');cellTd(tr,'Username',u.username);cellTd(tr,'Role',u.role);cellTd(tr,'Farm',u.farm||'All');cellTd(tr,'Active',u.active?'Yes':'No');const e=el('button',{class:'btn sm'},'Edit');e.onclick=()=>editUser(u);cellTd(tr,'',e,'act');tb.append(tr)});t.append(tb)}
+    r.users.forEach(u=>{const tr=el('tr');cellTd(tr,'',u.name,'head');cellTd(tr,'Username',u.username);cellTd(tr,'Role',ROLE_LABEL[ROLE_ALIAS[u.role]||u.role]||u.role);cellTd(tr,'Farm',u.farm||'All');cellTd(tr,'Active',u.active?'Yes':'No');const e=el('button',{class:'btn sm'},'Edit');e.onclick=()=>editUser(u);cellTd(tr,'',e,'act');tb.append(tr)});t.append(tb)}
   catch(e){t.replaceChildren();const tr=el('tr');tr.append(el('td',{class:'err'},e.message));t.append(tr)}
 }
 function editUser(u){
-  const isNew=!u;u=u||{username:'',name:'',role:'GROWER',farm:'',active:true};
+  const isNew=!u;u=u||{username:'',name:'',role:'RECORDER',farm:'',active:true};
   const body=el('div',{class:'fgrid'});const f=(lab,node)=>{const d=el('div',{class:'s2'});d.append(el('label',{class:'f'},lab),node);body.append(d);return node};
   const un=f('Username',el('input',{autocapitalize:'none'}));un.value=u.username;un.disabled=!isNew;
   const nm=f('Full name',el('input'));nm.value=u.name||'';
-  const rl=f('Role',el('select'));['GROWER','VIEWER','ADMIN'].forEach(r=>{const o=el('option',{value:r},r);if(r===u.role)o.selected=true;rl.append(o)});
-  const fm=f('Farm (growers)',el('select'));fm.append(el('option',{value:''},'All farms'));farmNames().forEach(n=>{const o=el('option',{value:n},n);if(n===u.farm)o.selected=true;fm.append(o)});
+  const rl=f('Role',el('select'));const ur=ROLE_ALIAS[String(u.role).toUpperCase()]||u.role;[['RECORDER','Recorder'],['MANAGER','Sup/Manager (view only)'],['ADMIN','Admin']].forEach(([r,t])=>{const o=el('option',{value:r},t);if(r===ur)o.selected=true;rl.append(o)});
+  const fm=f('Farm (recorders)',el('select'));fm.append(el('option',{value:''},'All farms'));farmNames().forEach(n=>{const o=el('option',{value:n},n);if(n===u.farm)o.selected=true;fm.append(o)});
   const pn=f(isNew?'Starting PIN (4–6 digits)':'Reset PIN (blank = keep)',el('input',{inputmode:'numeric'}));
   const ac=f('Active',el('select'));[['true','Yes'],['false','No']].forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(u.active!==false)===v)o.selected=true;ac.append(o)});
   const er=el('div',{class:'err s4'});body.append(er);
@@ -1044,11 +1195,11 @@ async function exportForecast(){
     const inv=standing(pd(UI.asOf)-1,UI.fFarm,UI.fBreed),iv=[['Farm','Breed'].concat(BANDS.map(b=>b.k+' kg'),['Total','Avg kg'])];
     const g=new Map();inv.forEach(r=>{const k=r.farm+'|'+r.breed;if(!g.has(k))g.set(k,[]);g.get(k).push(r)});g.forEach((rr,k)=>{const [f,b]=k.split('|'),h=sum(rr,r=>r.heads);iv.push([f,b].concat(BANDS.map(bd=>Math.round(sum(rr.filter(r=>r.band===bd.k),r=>r.heads))),[Math.round(h),h?r1(sum(rr,r=>r.kg)/h):'']))});
     addSheet(wb,'Inventory',head.concat(iv),[14,22,10,10,10,10,10,10]);
-    const hist=[['Farm','Building','Report date','Breed','Good','Defective','Weight min','Weight max','Ave age','Planned sale','Status','Recorded by','Submitted at','Remarks']];
-    allReports().filter(r=>!UI.fFarm||r.farm===UI.fFarm).sort((a,b)=>(a.farm+a.building+a.report_date+a.submitted_at).localeCompare(b.farm+b.building+b.report_date+b.submitted_at,undefined,{numeric:true})).forEach(r=>hist.push([r.farm,r.building,r.report_date,r.breed,+r.good||0,+r.defective||0,+r.wmin||0,+r.wmax||0,+r.ave_age||0,r.planned_sale||'',String(r.status||'ACTIVE').toUpperCase()+(r._pending?' (not synced)':''),r.name||r.username||'',r.submitted_at||'',r.remarks||'']));
+    const hist=[['Farm','Building','Report date','Breed','Good','Defective','Weight min','Weight max','Ave age','Planned sale','Status','Recorded by','Submitted at','Remarks','Edited at','Edited by']];
+    allReports().filter(r=>!UI.fFarm||r.farm===UI.fFarm).sort((a,b)=>(a.farm+a.building+a.report_date+a.submitted_at).localeCompare(b.farm+b.building+b.report_date+b.submitted_at,undefined,{numeric:true})).forEach(r=>hist.push([r.farm,r.building,r.report_date,r.breed,+r.good||0,+r.defective||0,+r.wmin||0,+r.wmax||0,+r.ave_age||0,r.planned_sale||'',String(r.status||'ACTIVE').toUpperCase()+(r._pending?' (not synced)':''),r.name||r.username||'',r.submitted_at||'',r.remarks||'',r.edited_at||'',r.edited_by||'']));
     addSheet(wb,'Report History',[['Every farm report update, oldest first per building (for tracing)'],[]].concat(hist),[12,12,12,22,8,9,10,10,8,12,14,16,22,24]);
-    const po=[['Date','Farm','Building','Type'].concat(BANDS.map(b=>b.k+' kg'),['Heads','Live kg','Customer / notes','Ref. no.','Recorded by'])];
-    allPullouts().filter(p=>!UI.fFarm||p.farm===UI.fFarm).sort((a,b)=>a.date.localeCompare(b.date)).forEach(p=>po.push([p.date,p.farm,p.building,p.type].concat(BANDS.map(b=>+p[b.f]||0),[+p.heads||0,p.kg===''?'':+p.kg,p.customer||p.remarks||'',p.ref_no||'',p.name||p.username||''])));
+    const po=[['Date','Farm','Building','Type'].concat(BANDS.map(b=>b.k+' kg'),['Heads','Live kg','Customer / notes','Ref. no.','Recorded by','Edited at','Edited by'])];
+    allPullouts().filter(p=>!UI.fFarm||p.farm===UI.fFarm).sort((a,b)=>a.date.localeCompare(b.date)).forEach(p=>po.push([p.date,p.farm,p.building,p.type].concat(BANDS.map(b=>+p[b.f]||0),[+p.heads||0,p.kg===''?'':+p.kg,p.customer||p.remarks||'',p.ref_no||'',p.name||p.username||'',p.edited_at||'',p.edited_by||''])));
     addSheet(wb,'Pull-outs',po,[12,12,12,14,10,10,10,10,8,10,24,12,16]);
     const sn=[['Saved on','Kind','By','Week starting','Farm','Weight category','Heads','Live kg']];
     snapList().forEach(s=>s.rows.filter(r=>!UI.fFarm||r.farm===UI.fFarm).sort((a,b)=>(a.week_start+a.farm).localeCompare(b.week_start+b.farm)).forEach(r=>sn.push([s.as_of,s.kind,s.by||'',r.week_start,r.farm,r.band,r1(r.heads),Math.round(+r.kg||0)])));
@@ -1127,7 +1278,7 @@ function doOut(msg){try{if(SESSION)api('logout',{}).catch(()=>{})}catch(e){}SESS
 function menu(){
   const body=el('div',{style:'display:grid;gap:8px'});let close;
   const b=(t,fn,cls)=>{const x=el('button',{class:'btn block '+(cls||'')},t);x.onclick=()=>{close();fn()};body.append(x)};
-  body.append(el('div',{class:'hint',style:'text-align:center'},ME().name+' · '+ME().role+(ME().farms.length?' · '+ME().farms.join(', '):'')));
+  body.append(el('div',{class:'hint',style:'text-align:center'},ME().name+' · '+(ROLE_LABEL[role()]||role())+(ME().farms.length?' · '+ME().farms.join(', '):'')));
   b('Change my PIN',()=>changePin(false));
   if(CFG.homeUrl&&/^https?:/.test(CFG.homeUrl))body.append(el('a',{href:CFG.homeUrl,class:'btn block',style:'text-align:center;text-decoration:none'},'Open Sales Dashboard'));
   b('Print this page',()=>window.print());b('Sign out',()=>logout(),'danger');
@@ -1147,16 +1298,15 @@ function bind(){
   $('r_report_date').onchange=()=>{if(UI.edit)onBuildingChange();else updateAuto()};
   ['r_breed','r_ave_age','r_wrange','r_good','r_defective'].forEach(id=>$(id).addEventListener('input',updateAuto));
   $('rClear').onclick=()=>{$('r_building').value='';clearForm();updateAuto()};
-  $('rForm').addEventListener('submit',e=>{e.preventDefault();const v=formVals(),bad=validate(v);$('rErr').textContent=bad;if(bad)return;
+  $('rForm').addEventListener('submit',e=>{e.preventDefault();if(!canEnter())return;const v=formVals(),bad=validate(v,!!UI.edit);$('rErr').textContent=bad;if(bad)return;
     const M=model(Object.assign({farm:UI.rFarm},v),todayYmd());
     queuePush('submit',{report:Object.assign({id:uid(),farm:UI.rFarm,batch:'',status:'ACTIVE',planned_sale:ymd(M.natural)},v)});
     toast(navigator.onLine?'Report sent ✓':'Saved on this device — will send when online');$('r_building').value='';clearForm();renderReport();window.scrollTo({top:0,behavior:'smooth'})});
   // pull-out
-  $('pFarm').onchange=e=>{UI.pFarm=e.target.value;$('p_building').value='';renderPullout()};
-  $$('#pType button').forEach(b=>b.onclick=()=>{UI.pType=b.dataset.t;renderPullout()});
+  $('pFarm').onchange=e=>{UI.pFarm=e.target.value;UI.pBld='';renderPullout()};
+  $$('#pType .type').forEach(b=>b.onclick=()=>{UI.pType=b.dataset.t;renderPullout()});
   $('pForm').addEventListener('input',updatePAuto);
-  $('pForm').addEventListener('submit',e=>{e.preventDefault();const v=pVals();let bad='';
-    if(!v.date)bad='Enter the date.';else if(pd(v.date)>pd(todayYmd()))bad='Date cannot be in the future.';else if(!v.building)bad='Choose the building.';else if(!(v.heads>0))bad='Enter heads in at least one weight category.';
+  $('pForm').addEventListener('submit',e=>{e.preventDefault();if(!canEnter())return;const v=pVals(),bad=pCheck(v);
     $('pErr').textContent=bad;if(bad)return;
     queuePush('submitPullout',{pullout:Object.assign({id:uid()},v)});toast((PTYPES.find(p=>p.k===v.type)||{}).t+' · '+v.heads+' hd '+(navigator.onLine?'sent ✓':'saved on this device'));
     BANDS.forEach(b=>$('p_'+b.f).value='');['p_kg','p_ref_no','p_remarks','p_customer'].forEach(id=>$(id).value='');renderPullout()});
@@ -1188,7 +1338,7 @@ function bind(){
 function clearForm(){UI.edit=null;$('r_building_new').value='';$('r_building_new').classList.add('hidden');['r_ave_age','r_good','r_remarks'].forEach(id=>$(id).value='');$('r_defective').value=0;$('r_wrange').value='';$('r_breed').value='';$('r_report_date').value=todayYmd();$('rErr').textContent='';$('formTitle').textContent='Farm report'}
 function startApp(){
   $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
-  UI.view=ls.get('view',canEnter()?'report':'forecast');
+  UI.view=ls.get('view',canEnter()?'report':'forecast');if(!VIEWS.some(v=>v.k===UI.view&&v.roles.includes(role())))UI.view=canEnter()?'report':'forecast';
   renderShell();renderView();load(true).then(()=>flush(true));
 }
 bind();
