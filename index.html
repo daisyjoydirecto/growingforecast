@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0d">
+<title>Live Market Hogs (Fatteners) Forecast</title>
+<!--
+  ================================================================
+   Live Market Hogs (Fatteners) Forecast — M. Montesclaros Farms Inc.
+   Paste your Apps Script Web app URL below, save, and upload this
+   file to GitHub Pages. Every device then uses it.
+   Leave appsScriptUrl '' to run in DEMO mode (sample data, saved
+   on this device only).
+  ================================================================
+-->
+<script>
+window.HOG_CONFIG = {
+  // Apps Script: Deploy > New deployment > Web app (Execute as: Me, Who has access: Anyone)
+  appsScriptUrl: '',
+  // Link shown in the header (optional)
+  homeUrl: '',
+};
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Questrial&display=swap">
+<style>
+:root{
+  --bg:#f2f2f2;--card:#fff;--ink:#1a1a1a;--muted:#666;--muted2:#999;--line:#e6e6e6;--line2:#c2c2c2;
+  --black:#0d0d0d;--lime:#8db600;--olive:#5c8000;--soft:#f1f7dc;--amber:#d97706;--blue:#2668b8;--red:#b42318;--ok:#2e7d32;
+  --font:"Century Gothic",CenturyGothic,AppleGothic,"URW Gothic","URW Gothic L","Questrial",sans-serif;
+  --fs:1;
+  /* weight categories (sequential, light → dark) */
+  --b0:#cfcfcf;--b1:#c5dc7a;--b2:#7ea300;--b3:#3d5600;
+  /* categorical series (breed / farm / age) */
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948;
+  --navh:0px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:calc(14px * var(--fs));font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+.hidden{display:none!important}
+button{font-family:inherit}
+/* header */
+header.top{background:var(--black);color:#fff;border-bottom:4px solid var(--lime);position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top)}
+header.top .wrap{max-width:1440px;margin:0 auto;padding:10px 14px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+.titles{flex:1;min-width:200px}
+.kicker{font-size:calc(10.5px * var(--fs));letter-spacing:.2em;text-transform:uppercase;color:var(--lime)}
+header h1{font-size:calc(21px * var(--fs));margin:3px 0 1px;font-weight:700}
+header .sub{font-size:calc(12px * var(--fs));color:#a8a8a8}
+.hbtns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.net{font-size:calc(11.5px * var(--fs));padding:5px 9px;border-radius:3px;border:1px solid #3a3a3a;white-space:nowrap}
+.net.on{color:var(--lime)}.net.off{background:var(--amber);border-color:var(--amber);color:#1a1a1a;font-weight:700}
+.chip{font-size:calc(12px * var(--fs));color:#ddd;padding:5px 9px;border:1px solid #3a3a3a;border-radius:3px;white-space:nowrap}
+.chip b{color:#fff}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.tab{padding:.5em 1em;border:1px solid #3a3a3a;border-radius:3px;cursor:pointer;font-size:calc(13px * var(--fs));color:#ddd;background:none}
+.tab:hover{border-color:var(--lime);color:#fff}
+.tab.active{background:var(--lime);border-color:var(--lime);color:var(--black);font-weight:700}
+.pendbar{background:#c62828;color:#fff;font-weight:700;padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pendbar button{background:#fff;color:#8a1616;border:0;border-radius:3px;padding:5px 12px;font-weight:700;cursor:pointer}
+.demobar{background:var(--soft);color:var(--olive);border-bottom:1px solid #d7e6a6;padding:6px 16px;font-size:calc(12.5px * var(--fs));text-align:center}
+/* bottom nav (phones) */
+nav.bottom{display:none}
+@media (max-width:760px){
+  :root{--navh:62px}
+  header .tabs{display:none}
+  header .sub{display:none}
+  header.top{position:static}
+  header .fsz,#who{display:none}
+  header .kicker{display:none}
+  header h1{font-size:calc(18px * var(--fs));margin:0}
+  header.top .wrap{align-items:center;padding:10px 12px}
+  nav.bottom{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--black);border-top:3px solid var(--lime);padding-bottom:env(safe-area-inset-bottom)}
+  nav.bottom button{flex:1;background:none;border:0;color:#bbb;padding:7px 2px 6px;font-size:calc(10.5px * var(--fs));display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+  nav.bottom button .ic{font-size:19px;line-height:1}
+  nav.bottom button.active{color:var(--lime);font-weight:700}
+  main{padding-bottom:calc(var(--navh) + 24px + env(safe-area-inset-bottom))!important}
+}
+/* buttons & fields */
+.btn{border:1px solid var(--line2);background:#fff;color:var(--ink);border-radius:3px;padding:.6em 1.05em;font-size:calc(13.5px * var(--fs));cursor:pointer;font-weight:700;white-space:nowrap}
+.btn:hover{border-color:var(--olive);color:var(--olive)}
+.btn.primary{background:var(--olive);border-color:var(--olive);color:#fff}
+.btn.primary:hover{background:#4c6a00;color:#fff}
+.btn.ghost{background:transparent;color:#fff;border-color:#5a5a5a}
+.btn.ghost:hover{border-color:var(--lime);color:var(--lime)}
+.btn.outline{background:#fff;border-color:var(--lime);color:var(--olive)}
+.btn.danger{background:#fff;border-color:var(--red);color:var(--red)}
+.btn.sm{padding:.4em .8em;font-size:calc(12.5px * var(--fs))}
+.btn.lg{padding:.8em 1.6em;font-size:calc(16px * var(--fs))}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fsz{display:inline-flex}.fsz .btn{border-radius:0;margin-left:-1px;padding:.4em .6em}.fsz .btn:first-child{border-radius:3px 0 0 3px}.fsz .btn:last-child{border-radius:0 3px 3px 0}
+main{padding:14px 16px 28px;max-width:1440px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:16px 18px;margin-bottom:12px;min-width:0}
+.card h2{margin:0 0 6px;font-size:calc(11.5px * var(--fs));letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+.card h2.title{font-size:calc(18px * var(--fs));letter-spacing:0;text-transform:none}
+.hint{font-size:calc(12.5px * var(--fs));color:var(--muted)}
+label.f{font-size:calc(11px * var(--fs));display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+input,select,textarea{width:100%;padding:.65em .7em;border:1px solid var(--line2);border-radius:3px;font-family:var(--font);font-size:16px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--olive);box-shadow:0 0 0 3px rgba(141,182,0,.25)}
+input:disabled,select:disabled{background:#f7f7f7;color:#555}
+.req{color:var(--red)}
+.fgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fgrid .s2{grid-column:span 2}.fgrid .s4{grid-column:1/-1}
+@media (max-width:760px){.fgrid{grid-template-columns:1fr 1fr}.fgrid .s2,.fgrid .s4{grid-column:1/-1}}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px}
+.toolbar>div{min-width:130px;flex:0 1 180px}
+@media (max-width:760px){.toolbar>div{flex:1 1 45%}}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
+.row2>.card{margin-bottom:0}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(46%,180px),1fr));gap:10px;margin-bottom:12px}
+.kpi{background:#fff;border:1px solid var(--line);border-left:4px solid var(--lime);border-radius:3px;padding:11px 13px}
+.kpi .k{font-size:calc(10.5px * var(--fs));letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.kpi .v{font-size:calc(25px * var(--fs));font-weight:700;margin-top:2px}
+.kpi .n{font-size:calc(12px * var(--fs));color:var(--muted2)}
+/* tables */
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:3px;background:#fff;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:calc(13px * var(--fs))}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{background:#f7f7f7;font-size:calc(10.5px * var(--fs));text-transform:uppercase;letter-spacing:.12em;font-weight:700;white-space:nowrap;position:sticky;top:0}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.tot td{font-weight:700;background:#fafcf3}
+/* responsive "card" tables */
+@media (max-width:640px){
+  table.rt thead{display:none}
+  table.rt,table.rt tbody,table.rt tr,table.rt td{display:block;width:100%}
+  table.rt tr{border:1px solid var(--line);border-radius:3px;margin:0 0 10px;padding:6px 10px;background:#fff}
+  table.rt td{border:0;padding:3px 0;display:flex;justify-content:space-between;gap:12px;text-align:right}
+  table.rt td::before{content:attr(data-l);font-size:calc(10.5px * var(--fs));text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;text-align:left}
+  table.rt td.head{font-weight:700;font-size:calc(15px * var(--fs));justify-content:flex-start}
+  table.rt td.head::before{display:none}
+  .tablewrap.rtw{border:0;background:none}
+}
+.badge{display:inline-block;padding:3px 9px;border-radius:3px;font-size:calc(11px * var(--fs));font-weight:700;letter-spacing:.06em;border:1px solid transparent;white-space:nowrap}
+.b-ready{background:#eaf6e4;color:var(--ok);border-color:#a8d59a}
+.b-soon{background:#fff1e0;color:#a35400;border-color:#f3c48c}
+.b-grow{background:#f2f2f2;color:#555;border-color:#ddd}
+.b-pend{background:#fdf0d9;color:#7a4b00;border-color:#f3cf93}
+.b-sold{background:#e8f0ff;color:#1f4fa8;border-color:#b9cdf5}
+/* chart */
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:calc(12px * var(--fs));color:var(--muted);margin:6px 0 8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.chart{position:relative;width:100%}
+.tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line2);box-shadow:0 6px 18px rgba(0,0,0,.15);border-radius:3px;padding:8px 10px;font-size:12px;min-width:160px;z-index:5;display:none}
+.tip b{display:block;margin-bottom:3px}.tip .r{display:flex;justify-content:space-between;gap:12px}
+.bars .br{display:grid;grid-template-columns:minmax(80px,110px) 1fr auto;gap:8px;align-items:center;margin:7px 0;font-size:calc(13px * var(--fs))}
+.bars .track{height:16px;background:#f0f0f0;border-radius:2px;overflow:hidden}
+.bars .fill{height:100%;border-radius:0 3px 3px 0}
+/* grower batch cards */
+.bcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:10px}
+.bcard{background:#fff;border:1px solid var(--line);border-top:3px solid var(--lime);border-radius:3px;padding:12px 14px}
+.bcard .t{font-weight:700;font-size:calc(15.5px * var(--fs))}
+.bcard .m{color:var(--muted);font-size:calc(12.5px * var(--fs));margin:2px 0 8px}
+.bcard .g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.bcard .g div{background:#fafafa;border:1px solid #eee;border-radius:3px;padding:5px 7px}
+.bcard .g .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.bcard .g .v{font-weight:700}
+.bcard .acts{display:flex;gap:6px;flex-wrap:wrap}
+.preview{background:#fafcf3;border:1px dashed var(--lime);border-radius:3px;padding:10px 12px;margin-top:12px;font-size:calc(13.5px * var(--fs))}
+.err{color:var(--red);font-weight:700;font-size:calc(13px * var(--fs))}
+/* login */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--black)}
+.login .box{background:#fff;border-top:5px solid var(--lime);border-radius:3px;width:100%;max-width:380px;padding:26px 24px}
+.login .kicker{color:var(--olive)}
+.login h1{margin:6px 0 4px;font-size:22px}
+/* modal & toast */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal{background:#fff;border-radius:3px;border-top:4px solid var(--lime);width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.modal .mh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.modal .mh h3{margin:0;font-size:17px}
+.modal .bd{padding:16px}
+.modal .ft{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--navh) + 18px);z-index:120;padding:11px 16px;border-radius:3px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:94vw}
+.toast.ok{background:#eaf6e4;color:#1e5e22;border:2px solid var(--ok)}
+.toast.bad{background:#fdecec;color:#8a1616;border:2px solid #c62828}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid #b9cdf5;border-top-color:#1f4fa8;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media print{header.top,nav.bottom,.pendbar,.demobar,.noprint{display:none!important}main{padding:0}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="login hidden">
+  <form class="box" id="loginForm" autocomplete="on">
+    <div class="kicker">M. Montesclaros Farms · Sales Meat &amp; Livestock</div>
+    <h1>Hog Fattener Forecast</h1>
+    <p class="hint" style="margin:0 0 16px">Sign in to enter farm reports or view the forecast.</p>
+    <label class="f" for="lgUser">Username</label>
+    <input id="lgUser" autocomplete="username" autocapitalize="none" required>
+    <div style="height:12px"></div>
+    <label class="f" for="lgPin">PIN</label>
+    <input id="lgPin" type="password" inputmode="numeric" autocomplete="current-password" required>
+    <div class="err" id="lgErr" style="margin-top:10px"></div>
+    <button class="btn primary lg block" id="lgBtn" style="margin-top:14px">Sign in</button>
+    <p class="hint hidden" id="lgDemo" style="margin-top:14px">Demo mode (no Google Sheet linked yet). Try <b>admin</b> / <b>1234</b>, grower <b>kinate</b> / <b>1111</b>, or <b>viewer</b> / <b>0000</b>.</p>
+  </form>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+<header class="top">
+  <div class="wrap">
+    <div class="titles">
+      <div class="kicker">Sales Meat &amp; Livestock · Live Hogs</div>
+      <h1>Fattener Forecast</h1>
+      <div class="sub">Live market hogs by breed, weight category, age and farm source</div>
+    </div>
+    <div class="hbtns">
+      <span class="net on" id="net">● Online</span>
+      <button class="btn ghost sm" id="btnSync" title="Reload from the Google Sheet">⟳ Sync</button>
+      <span class="fsz noprint"><button class="btn ghost sm" data-fs="-1" aria-label="Smaller text">A−</button><button class="btn ghost sm" data-fs="0" aria-label="Normal text">A</button><button class="btn ghost sm" data-fs="1" aria-label="Larger text">A+</button></span>
+      <span class="chip" id="who"></span>
+      <button class="btn ghost sm" id="btnMenu">☰</button>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</header>
+<div class="demobar hidden" id="demoBar">Demo mode — sample data saved on this device only. Paste your Apps Script URL in the file to connect the Google Sheet.</div>
+<div class="pendbar hidden" id="pendBar"><span id="pendTxt"></span><button id="pendGo">Send now</button></div>
+
+<main>
+  <!-- FORECAST -->
+  <section id="v-forecast" class="view">
+    <div class="toolbar">
+      <div><label class="f">As-of date</label><input type="date" id="asOf"></div>
+      <div><label class="f">View</label><select id="gran"><option value="week">Weekly (13 wks)</option><option value="month">Monthly (6 mos)</option></select></div>
+      <div><label class="f">Group by</label><select id="groupBy"><option value="band">Weight category</option><option value="breed">Breed</option><option value="farm">Farm source</option><option value="age">Age category</option></select></div>
+      <div><label class="f">Farm</label><select id="fFarm"></select></div>
+      <div><label class="f">Breed</label><select id="fBreed"></select></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="card">
+      <h2 class="title" id="fcTitle">Heads available to sell</h2>
+      <div class="hint">A batch is ready once its average weight reaches the breed's target and it is at least the minimum market age. Selling is spread over the set number of weeks.</div>
+      <div class="legend" id="fcLegend"></div>
+      <div class="chart" id="fcChart"><div class="tip" id="tip"></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><h2 style="margin:0">Forecast detail</h2><button class="btn sm noprint" id="copyDetail">Copy table</button></div>
+      <div class="tablewrap"><table id="detail"></table></div>
+    </div>
+    <div class="card">
+      <h2>Batch sale schedule</h2>
+      <div class="tablewrap rtw"><table class="rt" id="sched"></table></div>
+    </div>
+  </section>
+
+  <!-- INVENTORY -->
+  <section id="v-inventory" class="view hidden">
+    <div class="toolbar">
+      <div><label class="f">Inventory date</label><input type="date" id="invDate"></div>
+      <div><label class="f">Farm</label><select id="fFarm2"></select></div>
+      <div><label class="f">Breed</label><select id="fBreed2"></select></div>
+    </div>
+    <div class="kpis" id="invKpis"></div>
+    <div class="row2">
+      <div class="card"><h2>By weight category</h2><div class="bars" id="invBand"></div></div>
+      <div class="card"><h2>By age category</h2><div class="bars" id="invAge"></div></div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="card"><h2>Farm source × weight category (heads)</h2><div class="tablewrap"><table id="mFarm"></table></div></div>
+    <div class="card"><h2>Breed × weight category (heads)</h2><div class="tablewrap"><table id="mBreed"></table></div></div>
+    <div class="card"><h2>Breed × age category (heads)</h2><div class="tablewrap"><table id="mAge"></table></div></div>
+  </section>
+
+  <!-- REPORT (growing staff entry) -->
+  <section id="v-report" class="view hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div><h2 class="title" style="margin-bottom:2px">Estimated Marketable Hogs</h2><div class="hint">Update each building's batch weekly. Tap <b>Update</b> to start from the last report.</div></div>
+        <div style="min-width:180px"><label class="f">Farm</label><select id="rFarm"></select></div>
+      </div>
+    </div>
+    <div class="bcards" id="bcards"></div>
+    <div style="height:12px"></div>
+    <div class="card" id="formCard">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <h2 class="title" id="formTitle" style="margin:0">New batch report</h2>
+        <button class="btn sm" id="formNew">+ New batch</button>
+      </div>
+      <div style="height:12px"></div>
+      <form id="rForm" autocomplete="off">
+        <div class="fgrid">
+          <div><label class="f">Report date <span class="req">*</span></label><input type="date" id="r_report_date" required></div>
+          <div><label class="f">Building <span class="req">*</span></label><input id="r_building" placeholder="e.g. Bldg 1" required></div>
+          <div><label class="f">Batch code</label><input id="r_batch" placeholder="e.g. K-2608"></div>
+          <div><label class="f">Breed / line <span class="req">*</span></label><select id="r_breed" required></select></div>
+          <div><label class="f">Good heads <span class="req">*</span></label><input type="number" inputmode="numeric" min="0" id="r_good" required></div>
+          <div><label class="f">Defective heads</label><input type="number" inputmode="numeric" min="0" id="r_defective" value="0"></div>
+          <div><label class="f">Est. weight min (kg) <span class="req">*</span></label><input type="number" inputmode="decimal" min="5" max="250" step="0.5" id="r_wmin" required></div>
+          <div><label class="f">Est. weight max (kg) <span class="req">*</span></label><input type="number" inputmode="decimal" min="5" max="250" step="0.5" id="r_wmax" required></div>
+          <div><label class="f">Average age (days) <span class="req">*</span></label><input type="number" inputmode="numeric" min="20" max="400" id="r_ave_age" required></div>
+          <div><label class="f">Planned sale date</label><input type="date" id="r_planned_sale"></div>
+          <div class="s2"><label class="f">Remarks</label><input id="r_remarks" placeholder="optional"></div>
+        </div>
+        <div class="preview" id="rPreview">Fill in the report to see when this batch will be ready.</div>
+        <div class="err" id="rErr" style="margin-top:8px"></div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn primary lg" id="rSubmit" type="submit">Submit report</button>
+          <button class="btn lg" type="button" id="rClear">Clear</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>My recent reports</h2>
+      <div class="tablewrap rtw"><table class="rt" id="myReports"></table></div>
+    </div>
+  </section>
+
+  <!-- BATCHES (all latest reports) -->
+  <section id="v-batches" class="view hidden">
+    <div class="toolbar">
+      <div><label class="f">Farm</label><select id="fFarm3"></select></div>
+      <div><label class="f">Show</label><select id="bShow"><option value="active">Active batches (latest report)</option><option value="all">All reports (history)</option></select></div>
+      <div style="flex:1 1 200px"><label class="f">Search</label><input id="bSearch" placeholder="building, batch, breed, staff…"></div>
+    </div>
+    <div class="card"><div class="tablewrap rtw"><table class="rt" id="batchTbl"></table></div></div>
+  </section>
+
+  <!-- SETTINGS (admin) -->
+  <section id="v-settings" class="view hidden">
+    <div class="row2">
+      <div class="card">
+        <h2>Breed performance</h2>
+        <div class="hint" style="margin-bottom:8px">Finisher daily gain, target sell weight and monthly mortality.</div>
+        <div class="tablewrap"><table id="breedTbl"></table></div>
+        <button class="btn sm" id="addBreed" style="margin-top:8px">+ Add breed</button>
+      </div>
+      <div class="card">
+        <h2>Farm sources</h2>
+        <div class="hint" style="margin-bottom:8px">Growth factor multiplies breed daily gain (1.00 = standard; 0.95 = 5% slower).</div>
+        <div class="tablewrap"><table id="farmTbl"></table></div>
+        <button class="btn sm" id="addFarm" style="margin-top:8px">+ Add farm</button>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="card">
+      <h2>Forecast rules</h2>
+      <div class="fgrid" style="margin-top:8px">
+        <div><label class="f">Min. market age (days)</label><input type="number" id="sMinAge"></div>
+        <div><label class="f">Harvest spread (weeks)</label><input type="number" id="sSpread" min="1" max="8"></div>
+        <div class="s2"><label class="f">Defective heads</label><select id="sInclDef"><option value="0">Exclude from forecast</option><option value="1">Include in forecast</option></select></div>
+      </div>
+      <div class="hint" style="margin-top:10px">Weight categories: Under 90 · 90–120 · 121–130 · 131+ kg. Age categories: under 150 · 150–165 · 166–180 · 181+ days. Weight spread inside a batch = (max − min) ÷ 4.</div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn primary" id="saveSettings">Save settings to the sheet</button><span class="hint" id="setMsg"></span></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">Users</h2><button class="btn sm" id="addUser">+ Add user</button></div>
+      <div class="hint" style="margin:6px 0 8px">GROWER = growing staff (enter reports for their farm). VIEWER = dashboard only. ADMIN = everything.</div>
+      <div class="tablewrap rtw"><table class="rt" id="userTbl"></table></div>
+    </div>
+  </section>
+</main>
+<nav class="bottom" id="bottomNav"></nav>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+'use strict';
+const CFG = window.HOG_CONFIG || {};
+const DEMO = !CFG.appsScriptUrl;
+const $ = id => document.getElementById(id);
+const DAY = 864e5;
+const BANDS=[{k:'Under 90',lo:-1e9,hi:89.5,c:'--b0'},{k:'90–120',lo:89.5,hi:120.5,c:'--b1'},{k:'121–130',lo:120.5,hi:130.5,c:'--b2'},{k:'131+',lo:130.5,hi:1e9,c:'--b3'}];
+const AGES=[{k:'<150 d',max:149.999},{k:'150–165 d',max:165.999},{k:'166–180 d',max:180.999},{k:'181+ d',max:1e9}];
+const SER=['--s1','--s2','--s3','--s4','--s5','--s6','--s7','--s8'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const P='hogf_';
+
+/* ---------- storage ---------- */
+const ls = {get(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+            set(k,v){try{localStorage.setItem(P+k,JSON.stringify(v))}catch(e){}},
+            del(k){try{localStorage.removeItem(P+k)}catch(e){}}};
+
+/* ---------- helpers ---------- */
+const todayYmd=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const pd=s=>{if(!s)return null;const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s));return m?Date.UTC(+m[1],m[2]-1,+m[3]):null};
+const ymd=t=>new Date(t).toISOString().slice(0,10);
+const nice=t=>{const d=new Date(t);return MON[d.getUTCMonth()]+' '+d.getUTCDate()};
+const niceY=t=>{const d=new Date(t);return MON[d.getUTCMonth()]+' '+d.getUTCDate()+', '+d.getUTCFullYear()};
+const fmt=n=>Math.round(+n||0).toLocaleString('en-US');
+const fmt1=n=>(Math.round((+n||0)*10)/10).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
+const sum=(a,f)=>a.reduce((s,r)=>s+(f?f(r):r),0);
+const uid=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)+'-'+Math.random().toString(36).slice(2,6);
+function el(tag,attrs,text){const e=document.createElement(tag);if(attrs)for(const k in attrs){if(k==='class')e.className=attrs[k];else if(k==='style')e.style.cssText=attrs[k];else e.setAttribute(k,attrs[k])}if(text!=null)e.textContent=text;return e}
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+0.3275911*x);const y=1-(((((1.061405429*t-1.453152073)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y}
+const ncdf=(x,m,sd)=>sd<=0?(x>=m?1:0):0.5*(1+erf((x-m)/(sd*Math.SQRT2)));
+const bandShares=(m,sd)=>BANDS.map(b=>Math.max(0,ncdf(b.hi,m,sd)-ncdf(b.lo,m,sd)));
+const ageKey=a=>AGES.find(x=>a<=x.max).k;
+
+let toastT;function toast(msg,bad){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=el('div',{class:'toast '+(bad?'bad':'ok')},msg);document.body.append(t);clearTimeout(toastT);toastT=setTimeout(()=>t.remove(),bad?5000:2600)}
+function modal(title,body,buttons){
+  const root=$('modalRoot');root.replaceChildren();
+  const ov=el('div',{class:'overlay'}),m=el('div',{class:'modal'}),mh=el('div',{class:'mh'}),bd=el('div',{class:'bd'}),ft=el('div',{class:'ft'});
+  const x=el('button',{class:'btn sm'},'✕');x.onclick=close;mh.append(el('h3',null,title),x);
+  if(typeof body==='string')bd.append(el('div',null,body));else bd.append(body);
+  (buttons||[]).forEach(b=>{const btn=el('button',{class:'btn '+(b.cls||'')},b.text);btn.onclick=async()=>{if(b.onClick){btn.disabled=true;const r=await b.onClick();btn.disabled=false;if(r===false)return}close()};ft.append(btn)});
+  m.append(mh,bd);if(buttons&&buttons.length)m.append(ft);ov.append(m);root.append(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)close()});
+  function close(){root.replaceChildren()}
+  return close;
+}
+
+/* ---------- demo backend (no Google Sheet linked) ---------- */
+const demo = {
+  db(){let d=ls.get('demo_db',null);if(!d){d=demoSeed();ls.set('demo_db',d)}return d},
+  save(d){ls.set('demo_db',d)},
+  async call(fn,a){
+    await new Promise(r=>setTimeout(r,250));
+    const d=this.db();
+    if(fn==='login'){const u=d.users.find(u=>u.username===String(a.username).toLowerCase()&&u.pin===String(a.pin)&&u.active);if(!u)return{ok:false,error:'Wrong username or PIN.'};return{ok:true,token:'demo-'+u.username,exp:Date.now()+30*DAY,user:pub(u)}}
+    const u=d.users.find(x=>'demo-'+x.username===a.__token);if(!u)return{ok:false,error:'SESSION_EXPIRED'};
+    if(fn==='data')return{ok:true,user:pub(u),reports:d.reports.filter(r=>!r.voided),breeds:d.breeds,farms:d.farms,rules:d.rules};
+    if(fn==='submit'){const r=a.report;if(u.role==='VIEWER')return{ok:false,error:'Viewers cannot submit reports.'};if(d.reports.some(x=>x.id===r.id))return{ok:true,duplicate:true};d.reports.push(Object.assign({},r,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
+    if(fn==='void'){const r=d.reports.find(x=>x.id===a.id);if(!r)return{ok:false,error:'Not found'};if(u.role!=='ADMIN'&&r.username!==u.username)return{ok:false,error:'You can only void your own reports.'};r.voided=true;this.save(d);return{ok:true}}
+    if(fn==='saveSettings'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};if(a.breeds)d.breeds=a.breeds;if(a.farms)d.farms=a.farms;if(a.rules)d.rules=a.rules;(a.renames||[]).forEach(x=>d.reports.forEach(r=>{if(x.type==='farm'&&r.farm===x.from)r.farm=x.to;if(x.type==='breed'&&r.breed===x.from)r.breed=x.to}));this.save(d);return{ok:true}}
+    if(fn==='listUsers')return{ok:true,users:d.users.map(x=>({username:x.username,name:x.name,role:x.role,farm:x.farm,active:x.active}))};
+    if(fn==='saveUser'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};let x=d.users.find(z=>z.username===a.username);if(!x){if(!a.pin)return{ok:false,error:'Give the new user a starting PIN.'};x={username:a.username};d.users.push(x)}Object.assign(x,{name:a.name,role:a.role,farm:a.farm,active:a.active!==false});if(a.pin)x.pin=String(a.pin);this.save(d);return{ok:true}}
+    if(fn==='changePin'){if(u.pin!==String(a.oldPin))return{ok:false,error:'Current PIN is wrong.'};u.pin=String(a.newPin);u.must=false;this.save(d);return{ok:true}}
+    if(fn==='logout')return{ok:true};
+    return{ok:false,error:'Unknown action'};
+    function pub(u){return{username:u.username,name:u.name,role:u.role,farms:String(u.farm||'').split(',').map(s=>s.trim()).filter(Boolean),mustChangePin:!!u.must}}
+  }
+};
+function demoSeed(){
+  const rd=ymd(Date.now()-5*DAY);const ago=n=>ymd(Date.now()-n*DAY);
+  const R=(farm,building,batch,breed,good,def,wmin,wmax,age,date,user,name)=>({id:uid(),submitted_at:new Date(pd(date)+9*3600e3).toISOString(),username:user,name,farm,building,batch,breed,good,defective:def,wmin,wmax,ave_age:age,report_date:date,planned_sale:'',status:'ACTIVE',remarks:''});
+  return{
+    users:[{username:'admin',name:'Administrator',role:'ADMIN',farm:'',pin:'1234',active:true},
+           {username:'kinate',name:'Kinate Grower',role:'GROWER',farm:'Kinate',pin:'1111',active:true},
+           {username:'mapayag',name:'Mapayag Grower',role:'GROWER',farm:'Mapayag',pin:'2222',active:true},
+           {username:'viewer',name:'Sales Viewer',role:'VIEWER',farm:'',pin:'0000',active:true}],
+    breeds:[{name:'3-Way Cross (LW×LR×D)',adg:0.82,target:110,mort:0.5},{name:'PIC',adg:0.88,target:115,mort:0.5},{name:'Hypor',adg:0.86,target:112,mort:0.5},{name:'Duroc Cross',adg:0.80,target:108,mort:0.6}],
+    farms:[{name:'Kinate',factor:1},{name:'Mapayag',factor:0.97}],
+    rules:{minAge:150,spread:2,inclDef:0},
+    reports:[
+      R('Kinate','Bldg 1','K-2607','3-Way Cross (LW×LR×D)',182,4,90,104,141,ago(12),'kinate','Kinate Grower'),
+      R('Kinate','Bldg 1','K-2607','3-Way Cross (LW×LR×D)',180,4,95,110,148,rd,'kinate','Kinate Grower'),
+      R('Kinate','Bldg 2','K-2608','3-Way Cross (LW×LR×D)',200,3,80,95,135,rd,'kinate','Kinate Grower'),
+      R('Kinate','Bldg 3','K-2609','PIC',160,2,65,80,118,rd,'kinate','Kinate Grower'),
+      R('Kinate','Bldg 4','K-2610','PIC',190,5,50,65,100,rd,'kinate','Kinate Grower'),
+      R('Mapayag','Bldg A','M-2606','Hypor',150,2,100,118,155,rd,'mapayag','Mapayag Grower'),
+      R('Mapayag','Bldg B','M-2607','3-Way Cross (LW×LR×D)',175,6,85,100,140,rd,'mapayag','Mapayag Grower'),
+      R('Mapayag','Bldg C','M-2608','Duroc Cross',140,1,70,85,125,rd,'mapayag','Mapayag Grower'),
+      R('Mapayag','Bldg D','M-2609','Hypor',165,3,45,60,95,rd,'mapayag','Mapayag Grower')]
+  };
+}
+
+/* ---------- API ---------- */
+let SESSION = ls.get('session',null);
+async function api(fn,args,opt){
+  opt=opt||{};
+  if(DEMO){const r=await demo.call(fn,Object.assign({},args,{__token:SESSION&&SESSION.token}));if(!r.ok)throw apiErr(r.error);return r}
+  const ac=new AbortController();const t=setTimeout(()=>ac.abort(),opt.timeout||30000);
+  let res;
+  try{res=await fetch(CFG.appsScriptUrl,{method:'POST',body:JSON.stringify({fn,args:args||{},token:SESSION&&SESSION.token}),signal:ac.signal,redirect:'follow'})}
+  catch(e){const er=new Error(navigator.onLine?'Could not reach the Google Sheet. Check your connection.':'You are offline.');er.network=true;throw er}
+  finally{clearTimeout(t)}
+  let j;try{j=await res.json()}catch(e){const er=new Error('The Google Sheet sent an unexpected reply. Check the Apps Script deployment.');er.network=true;throw er}
+  if(!j.ok)throw apiErr(j.error);
+  return j;
+}
+function apiErr(m){const e=new Error(m==='SESSION_EXPIRED'?'Your session expired. Please sign in again.':m);if(m==='SESSION_EXPIRED')e.expired=true;return e}
+
+/* ---------- state ---------- */
+let DATA = ls.get('cache',null) || {reports:[],breeds:[],farms:[],rules:{minAge:150,spread:2,inclDef:0}};
+let QUEUE = ls.get('queue',[]);
+const UI = {view:'forecast',gran:'week',groupBy:'band',fFarm:'',fBreed:'',asOf:todayYmd(),invDate:null,edit:null,rFarm:'',bShow:'active',bSearch:''};
+let FS = ls.get('fs',1);document.documentElement.style.setProperty('--fs',FS);
+const ME = ()=>SESSION&&SESSION.user;
+const isAdmin=()=>ME()&&ME().role==='ADMIN';
+const canEnter=()=>ME()&&(ME().role==='ADMIN'||ME().role==='GROWER');
+
+function allReports(){ // server + pending
+  const pend=QUEUE.filter(q=>q.fn==='submit').map(q=>Object.assign({},q.args.report,{_pending:true,username:ME().username,name:ME().name,submitted_at:q.at}));
+  const voidPend=new Set(QUEUE.filter(q=>q.fn==='void').map(q=>q.args.id));
+  return DATA.reports.concat(pend).filter(r=>!voidPend.has(r.id));
+}
+const bkey=r=>(r.farm||'')+'|'+((r.batch||'').trim()||('@'+(r.building||'').trim()));
+function latestByBatch(){
+  const m=new Map();
+  allReports().forEach(r=>{const k=bkey(r),c=m.get(k);if(!c||(r.report_date>c.report_date)||(r.report_date===c.report_date&&String(r.submitted_at)>String(c.submitted_at)))m.set(k,r)});
+  return [...m.values()];
+}
+const activeBatches=()=>latestByBatch().filter(r=>String(r.status||'ACTIVE').toUpperCase()==='ACTIVE'&&(+r.good||0)+(+r.defective||0)>0);
+const breedOf=n=>DATA.breeds.find(b=>b.name===n)||{name:n,adg:0.8,target:110,mort:0.5};
+const farmF=n=>{const f=DATA.farms.find(f=>f.name===n);return f?(+f.factor||1):1};
+const rules=()=>({minAge:+DATA.rules.minAge||150,spread:Math.max(1,Math.min(8,Math.round(+DATA.rules.spread||2))),inclDef:+DATA.rules.inclDef||0});
+const farmNames=()=>[...new Set(DATA.farms.map(f=>f.name).concat(allReports().map(r=>r.farm)).filter(Boolean))];
+const breedNames=()=>[...new Set(DATA.breeds.map(b=>b.name).concat(allReports().map(r=>r.breed)).filter(Boolean))];
+
+/* ---------- forecast model ---------- */
+function model(b,asOfYmd){
+  const R=rules(),br=breedOf(b.breed),g=Math.max(0.05,(+br.adg||0.8)*farmF(b.farm));
+  const wmin=+b.wmin||0,wmax=Math.max(+b.wmax||0,wmin),m0=(wmin+wmax)/2||1;
+  const sd0=wmax>wmin?(wmax-wmin)/4:m0*0.06;
+  const asOf=pd(asOfYmd||UI.asOf),rep=pd(b.report_date)||asOf,age0=+b.ave_age||0;
+  const daysW=Math.ceil(((+br.target||110)-m0)/g),daysA=R.minAge-age0;
+  const natural=pd(b.planned_sale)||(rep+Math.max(0,daysW,daysA)*DAY);
+  const start=Math.max(natural,asOf);
+  const heads=(+b.good||0)+(R.inclDef?(+b.defective||0):0);
+  const mort=(+br.mort||0)/100;
+  const at=t=>{const d=Math.max(0,(t-rep)/DAY);const m=m0+g*d;return{days:d,mean:m,sd:sd0*m/m0,age:age0+d,surv:Math.max(0,1-mort*d/30)}};
+  const lots=[];for(let k=0;k<R.spread;k++){const t=start+k*7*DAY,s=at(t);lots.push(Object.assign({t,heads:heads/R.spread*s.surv},s))}
+  return{b,br,g,m0,rep,start,natural,heads,lots,at,spread:R.spread};
+}
+function filtered(farm,breed){return activeBatches().filter(b=>(!farm||b.farm===farm)&&(!breed||b.breed===breed))}
+function periods(){
+  const asOf=pd(UI.asOf),out=[];
+  if(UI.gran==='week'){for(let i=0;i<13;i++){const a=asOf+i*7*DAY,z=a+7*DAY;out.push({a,z,label:nice(a),long:nice(a)+' – '+nice(z-DAY)})}}
+  else{const d=new Date(asOf);let y=d.getUTCFullYear(),m=d.getUTCMonth();for(let i=0;i<6;i++){const a=Date.UTC(y,m,1),z=Date.UTC(y,m+1,1);out.push({a:i?a:asOf,z,label:MON[m]+" '"+String(y).slice(2),long:MON[m]+' '+y});m++;if(m>11){m=0;y++}}}
+  return out;
+}
+function forecastRows(){
+  const Ps=periods(),rows=[];
+  filtered(UI.fFarm,UI.fBreed).forEach(b=>{const M=model(b);
+    M.lots.forEach(L=>{const pi=Ps.findIndex(p=>L.t>=p.a&&L.t<p.z);if(pi<0)return;const sh=bandShares(L.mean,L.sd);
+      BANDS.forEach((bd,i)=>{const h=L.heads*sh[i];if(h>0)rows.push({pi,band:bd.k,breed:b.breed,farm:b.farm,age:ageKey(L.age),heads:h,kg:h*L.mean})})})});
+  return{P:Ps,rows};
+}
+function standing(t,farm,breed){
+  const out=[];
+  filtered(farm,breed).forEach(b=>{const M=model(b);const rem=M.lots.filter(L=>L.t>t).length;if(!rem)return;
+    const s=M.at(Math.max(t,M.rep)),h=M.heads*s.surv*rem/M.spread,sh=bandShares(s.mean,s.sd);
+    BANDS.forEach((bd,i)=>{const x=h*sh[i];if(x>0)out.push({band:bd.k,breed:b.breed,farm:b.farm,age:ageKey(s.age),ageDays:s.age,heads:x,kg:x*s.mean})})});
+  return out;
+}
+function groupKeys(dim,rows){
+  if(dim==='band')return BANDS.map(b=>b.k);if(dim==='age')return AGES.map(a=>a.k);
+  const base=dim==='breed'?breedNames():farmNames();return base.concat([...new Set(rows.map(r=>r[dim]))].filter(k=>!base.includes(k)));
+}
+function colorFor(dim,key){
+  if(dim==='band')return cssv(BANDS.find(b=>b.k===key).c);
+  const all=dim==='breed'?breedNames():dim==='farm'?farmNames():AGES.map(a=>a.k);
+  return cssv(SER[Math.max(0,all.indexOf(key))%8]);
+}
+
+/* ---------- render: shell ---------- */
+const VIEWS=[
+  {k:'forecast',t:'Forecast',ic:'📈',roles:['ADMIN','GROWER','VIEWER']},
+  {k:'inventory',t:'Inventory',ic:'🐖',roles:['ADMIN','GROWER','VIEWER']},
+  {k:'report',t:'Farm Report',ic:'✍️',roles:['ADMIN','GROWER']},
+  {k:'batches',t:'Batches',ic:'📋',roles:['ADMIN','GROWER','VIEWER']},
+  {k:'settings',t:'Settings',ic:'⚙️',roles:['ADMIN']}];
+function renderShell(){
+  const u=ME(),vs=VIEWS.filter(v=>v.roles.includes(u.role));
+  if(!vs.some(v=>v.k===UI.view))UI.view=vs[0].k;
+  const tabs=$('tabs'),bn=$('bottomNav');tabs.replaceChildren();bn.replaceChildren();
+  vs.forEach(v=>{
+    const t=el('button',{class:'tab'+(UI.view===v.k?' active':'')},v.t);t.onclick=()=>go(v.k);tabs.append(t);
+    const b=el('button',{class:UI.view===v.k?'active':''});b.append(el('span',{class:'ic'},v.ic),el('span',null,v.t));b.onclick=()=>go(v.k);bn.append(b)});
+  $('who').replaceChildren(document.createTextNode('👤 '),el('b',null,u.name),document.createTextNode(' · '+u.role+(u.farms&&u.farms.length?' · '+u.farms.join(', '):'')));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('hidden',s.id!=='v-'+UI.view));
+  $('demoBar').classList.toggle('hidden',!DEMO);
+  renderNet();renderPend();
+}
+function go(v){UI.view=v;ls.set('view',v);renderShell();renderView();window.scrollTo(0,0)}
+function renderView(){
+  if(UI.view==='forecast'){fillFilters();renderKPIs();renderForecast();renderSched()}
+  else if(UI.view==='inventory'){fillFilters();renderInv()}
+  else if(UI.view==='report')renderReport();
+  else if(UI.view==='batches'){fillFilters();renderBatches()}
+  else if(UI.view==='settings')renderSettings();
+}
+function renderNet(){const on=navigator.onLine;const n=$('net');n.className='net '+(on?'on':'off');n.textContent=on?'● Online':'● Offline'}
+function renderPend(){const n=QUEUE.length;$('pendBar').classList.toggle('hidden',!n);$('pendTxt').textContent=n+' report'+(n>1?'s':'')+' saved on this device, not yet in the Google Sheet.'+(navigator.onLine?'':' They will send when you are back online.')}
+function fillSel(id,list,cur,allLabel){const s=$(id);if(!s)return;s.replaceChildren();if(allLabel!==null)s.append(el('option',{value:''},allLabel||'All'));list.forEach(n=>{const o=el('option',{value:n},n);if(n===cur)o.selected=true;s.append(o)})}
+function fillFilters(){
+  ['fFarm','fFarm2','fFarm3'].forEach(id=>fillSel(id,farmNames(),UI.fFarm));
+  ['fBreed','fBreed2'].forEach(id=>fillSel(id,breedNames(),UI.fBreed));
+  $('asOf').value=UI.asOf;$('invDate').value=UI.invDate||UI.asOf;$('gran').value=UI.gran;$('groupBy').value=UI.groupBy;
+}
+
+/* ---------- render: forecast ---------- */
+function kpi(box,k,v,n){const d=el('div',{class:'kpi'});d.append(el('div',{class:'k'},k),el('div',{class:'v'},v),el('div',{class:'n'},n||''));box.append(d)}
+function renderKPIs(){
+  const asOf=pd(UI.asOf),fb=filtered(UI.fFarm,UI.fBreed),R=rules();
+  const now=standing(asOf-1,UI.fFarm,UI.fBreed),live=sum(now,r=>r.heads);
+  const mkt=sum(now.filter(r=>r.band!=='Under 90'&&r.ageDays>=R.minAge),r=>r.heads);
+  const n30=sum(fb.map(b=>model(b)).flatMap(M=>M.lots).filter(L=>L.t<asOf+30*DAY),L=>L.heads);
+  const {rows}=forecastRows(),tot=sum(rows,r=>r.heads),kg=sum(rows,r=>r.kg);
+  const box=$('kpis');box.replaceChildren();
+  kpi(box,'Live fatteners',fmt(live),fb.length+' active batches');
+  kpi(box,'Marketable now',fmt(mkt),'≥90 kg & ≥'+R.minAge+' days');
+  kpi(box,'Ready next 30 days',fmt(n30),'heads');
+  kpi(box,'Forecast in view',fmt(tot),fmt(kg/1000)+' t est. live wt');
+  kpi(box,'Avg sell weight',tot?fmt1(kg/tot)+' kg':'—',R.inclDef?'incl. defective':fmt(sum(fb,b=>+b.defective||0))+' defective excluded');
+}
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x||1)));const n=x/p;return(n<=1?1:n<=2?2:n<=5?5:10)*p}
+function segPath(x,y,w,h,r){r=Math.min(r,h,w/2);if(r<=0)return`M${x},${y}h${w}v${h}h${-w}z`;return`M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`}
+function renderForecast(){
+  const {P:Ps,rows}=forecastRows(),dim=UI.groupBy,keys=groupKeys(dim,rows);
+  const lab={band:'weight category',breed:'breed',farm:'farm source',age:'age category'}[dim];
+  $('fcTitle').textContent='Heads available to sell, '+(UI.gran==='week'?'by week':'by month')+', by '+lab;
+  const M=Ps.map(()=>Object.fromEntries(keys.map(k=>[k,{h:0,kg:0}])));
+  rows.forEach(r=>{const c=M[r.pi][r[dim]];c.h+=r.heads;c.kg+=r.kg});
+  const used=keys.filter(k=>M.some(p=>p[k].h>0.5));
+  const lg=$('fcLegend');lg.replaceChildren();
+  used.forEach(k=>{const s=el('span'),i=el('i');i.style.background=colorFor(dim,k);s.append(i,document.createTextNode(dim==='band'?k+' kg':k));lg.append(s)});
+  const box=$('fcChart'),tip=$('tip');[...box.querySelectorAll('svg,.empty')].forEach(n=>n.remove());
+  const W=Math.max(280,box.clientWidth),narrow=W<520,H=narrow?250:300,ml=40,mr=6,mt=14,mb=30,iw=W-ml-mr,ih=H-mt-mb;
+  const totals=Ps.map((p,i)=>sum(used,k=>M[i][k].h));
+  const max=Math.max(10,...totals),step=niceStep(max/4),ymax=Math.ceil(max/step)*step;
+  const NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('role','img');svg.setAttribute('aria-label',$('fcTitle').textContent);
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+  for(let v=0;v<=ymax+1e-9;v+=step){const y=mt+ih-v/ymax*ih;svg.append(mk('line',{x1:ml,x2:W-mr,y1:y,y2:y,stroke:'#ececec'}));const t=mk('text',{x:ml-6,y:y+4,'text-anchor':'end','font-size':11,fill:'#999'});t.textContent=fmt(v);svg.append(t)}
+  const bw=iw/Ps.length,barW=Math.min(46,bw*0.64),skip=Ps.length>8&&narrow?2:1;
+  Ps.forEach((p,i)=>{
+    const x=ml+i*bw+(bw-barW)/2;let y=mt+ih;const segs=used.filter(k=>M[i][k].h>0.5);
+    segs.forEach((k,si)=>{const h=M[i][k].h/ymax*ih;svg.append(mk('path',{d:segPath(x,y-h,barW,Math.max(0,h-(si?2:0)),si===segs.length-1?3:0),fill:colorFor(dim,k)}));y-=h});
+    if(i%skip===0){const t=mk('text',{x:ml+i*bw+bw/2,y:H-mb+16,'text-anchor':'middle','font-size':narrow?10:11,fill:'#666'});t.textContent=p.label;svg.append(t)}
+    if(totals[i]>0.5&&barW>=20){const t=mk('text',{x:ml+i*bw+bw/2,y:mt+ih-totals[i]/ymax*ih-5,'text-anchor':'middle','font-size':10.5,fill:'#444'});t.textContent=fmt(totals[i]);svg.append(t)}
+    const hit=mk('rect',{x:ml+i*bw,y:mt,width:bw,height:ih,fill:'transparent'});
+    const show=ev=>{tip.replaceChildren(el('b',null,p.long));
+      used.slice().reverse().forEach(k=>{if(M[i][k].h<0.5)return;const r=el('div',{class:'r'}),n=el('span'),sw=el('i',{style:'display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;background:'+colorFor(dim,k)});n.append(sw,document.createTextNode(k));r.append(n,el('span',null,fmt(M[i][k].h)+' hd'));tip.append(r)});
+      const kg=sum(used,k=>M[i][k].kg),r=el('div',{class:'r',style:'border-top:1px solid #e6e6e6;margin-top:4px;padding-top:4px;font-weight:700'});r.append(el('span',null,'Total'),el('span',null,fmt(totals[i])+' hd'));tip.append(r);
+      if(totals[i]>0.5)tip.append(el('div',{class:'hint'},'Est. '+fmt(kg)+' kg live · avg '+fmt1(kg/totals[i])+' kg'));
+      tip.style.display='block';const bx=box.getBoundingClientRect(),cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-bx.left,cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-bx.top;
+      let lx=cx+14;if(lx+200>bx.width)lx=cx-210;tip.style.left=Math.max(0,lx)+'px';tip.style.top=Math.max(0,cy-30)+'px'};
+    hit.addEventListener('mousemove',show);hit.addEventListener('click',show);hit.addEventListener('mouseleave',()=>tip.style.display='none');
+    svg.append(hit)});
+  svg.append(mk('line',{x1:ml,x2:W-mr,y1:mt+ih,y2:mt+ih,stroke:'#999'}));
+  box.append(svg);
+  if(!rows.length)box.append(el('div',{class:'empty hint'},'No batches projected to be ready in this period for the current filters.'));
+  const t=$('detail');t.replaceChildren();
+  const th=el('thead'),hr=el('tr');hr.append(el('th',null,UI.gran==='week'?'Week of':'Month'));used.forEach(k=>hr.append(el('th',{class:'n'},k)));['Total heads','Est. live kg','Avg kg'].forEach(h=>hr.append(el('th',{class:'n'},h)));th.append(hr);t.append(th);
+  const tb=el('tbody');
+  Ps.forEach((p,i)=>{const tr=el('tr');tr.append(el('td',null,p.long));used.forEach(k=>tr.append(el('td',{class:'n'},M[i][k].h>0.5?fmt(M[i][k].h):'–')));const kg=sum(used,k=>M[i][k].kg);tr.append(el('td',{class:'n'},fmt(totals[i])),el('td',{class:'n'},fmt(kg)),el('td',{class:'n'},totals[i]>0.5?fmt1(kg/totals[i]):'–'));tb.append(tr)});
+  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Total'));used.forEach(k=>tr.append(el('td',{class:'n'},fmt(sum(Ps.map((p,i)=>M[i][k].h))))));const T=sum(totals),K=sum(Ps.map((p,i)=>sum(used,k=>M[i][k].kg)));tr.append(el('td',{class:'n'},fmt(T)),el('td',{class:'n'},fmt(K)),el('td',{class:'n'},T?fmt1(K/T):'–'));tb.append(tr);t.append(tb);
+}
+function statusBadge(dd){return el('span',{class:'badge '+(dd<=0?'b-ready':dd<=30?'b-soon':'b-grow')},dd<=0?'Ready now':dd<=30?'≤30 days':'Growing')}
+function renderSched(){
+  const t=$('sched');t.replaceChildren();const asOf=pd(UI.asOf);
+  const cols=['Farm / building','Batch','Breed','Heads','Avg kg now','Age now','Ready date','Days left','Kg at sale','Age at sale','Status'];
+  const th=el('thead'),hr=el('tr');cols.forEach((h,i)=>hr.append(el('th',{class:i>=3&&i!==6&&i!==10?'n':''},h)));th.append(hr);t.append(th);
+  const tb=el('tbody');
+  const list=filtered(UI.fFarm,UI.fBreed).map(b=>model(b)).sort((a,b)=>a.start-b.start);
+  if(!list.length){const tr=el('tr');tr.append(el('td',{class:'hint',colspan:cols.length},'No active batches. Growing staff add them under Farm Report.'));tb.append(tr)}
+  list.forEach(M=>{const now=M.at(asOf),L=M.lots[0],dd=Math.round((M.natural-asOf)/DAY),tr=el('tr');
+    const c=(l,v,cls)=>{const td=el('td',{'data-l':l,class:cls||''});if(v instanceof Node)td.append(v);else td.textContent=v;tr.append(td)};
+    c('',M.b.farm+' · '+(M.b.building||'—'),'head');c('Batch',M.b.batch||'—');c('Breed',M.b.breed);c('Heads',fmt(M.heads),'n');c('Avg kg now',fmt1(now.mean),'n');c('Age now',fmt(now.age)+' d','n');
+    c('Ready date',niceY(M.start)+(M.spread>1?' (+'+(M.spread-1)+' wk)':''));c('Days left',dd<=0?'0':fmt(dd),'n');c('Kg at sale',fmt1(L.mean),'n');c('Age at sale',fmt(L.age)+' d','n');
+    const st=el('span');st.append(statusBadge(dd));if(M.b._pending)st.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));c('Status',st);tb.append(tr)});
+  t.append(tb);
+}
+
+/* ---------- render: inventory ---------- */
+function renderInv(){
+  const t=pd(UI.invDate||UI.asOf),R=rules(),rows=standing(t-1,UI.fFarm,UI.fBreed),tot=sum(rows,r=>r.heads),kg=sum(rows,r=>r.kg);
+  const k=$('invKpis');k.replaceChildren();
+  kpi(k,'Heads on farm',fmt(tot),'on '+niceY(t));
+  kpi(k,'Marketable',fmt(sum(rows.filter(r=>r.band!=='Under 90'&&r.ageDays>=R.minAge),r=>r.heads)),'≥90 kg & ≥'+R.minAge+' d');
+  kpi(k,'Est. live weight',fmt(kg/1000)+' t',tot?'avg '+fmt1(kg/tot)+' kg/head':'');
+  kpi(k,'Heavy 131 kg+',fmt(sum(rows.filter(r=>r.band==='131+'),r=>r.heads)),'over-weight risk');
+  const bars=(id,keys,dim,colorF)=>{const box=$(id);box.replaceChildren();const vals=keys.map(k=>sum(rows.filter(r=>r[dim]===k),r=>r.heads)),mx=Math.max(1,...vals);
+    keys.forEach((kk,i)=>{const r=el('div',{class:'br'});r.append(el('div',null,dim==='band'?kk+' kg':kk));const tr=el('div',{class:'track'}),f=el('div',{class:'fill'});f.style.width=(vals[i]/mx*100)+'%';f.style.background=colorF(kk,i);tr.append(f);r.append(tr,el('div',{class:'n'},fmt(vals[i])+' hd · '+(tot?Math.round(vals[i]/tot*100):0)+'%'));box.append(r)})};
+  bars('invBand',BANDS.map(b=>b.k),'band',kk=>cssv(BANDS.find(b=>b.k===kk).c));
+  bars('invAge',AGES.map(a=>a.k),'age',(kk,i)=>cssv(SER[i]));
+  matrix('mFarm',rows,'farm',BANDS.map(b=>b.k),'band',' kg');
+  matrix('mBreed',rows,'breed',BANDS.map(b=>b.k),'band',' kg');
+  matrix('mAge',rows,'breed',AGES.map(a=>a.k),'age','');
+}
+function matrix(id,rows,rdim,cols,cdim,suf){
+  const t=$(id);t.replaceChildren();const rk=groupKeys(rdim,rows).filter(k=>rows.some(r=>r[rdim]===k));
+  if(!rk.length){const tr=el('tr');tr.append(el('td',{class:'hint'},'No live fatteners on this date for the current filters.'));t.append(tr);return}
+  const th=el('thead'),hr=el('tr');hr.append(el('th',null,rdim==='farm'?'Farm source':'Breed'));cols.forEach(c=>hr.append(el('th',{class:'n'},c+suf)));hr.append(el('th',{class:'n'},'Total'),el('th',{class:'n'},'Avg kg'));th.append(hr);t.append(th);
+  const tb=el('tbody'),cell=f=>sum(rows.filter(f),r=>r.heads);
+  rk.forEach(k=>{const tr=el('tr');tr.append(el('td',null,k));cols.forEach(c=>{const v=cell(r=>r[rdim]===k&&r[cdim]===c);tr.append(el('td',{class:'n'},v>0.5?fmt(v):'–'))});const rr=rows.filter(r=>r[rdim]===k),h=sum(rr,r=>r.heads);tr.append(el('td',{class:'n'},fmt(h)),el('td',{class:'n'},h?fmt1(sum(rr,r=>r.kg)/h):'–'));tb.append(tr)});
+  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Total'));cols.forEach(c=>tr.append(el('td',{class:'n'},fmt(cell(r=>r[cdim]===c)))));const h=sum(rows,r=>r.heads);tr.append(el('td',{class:'n'},fmt(h)),el('td',{class:'n'},h?fmt1(sum(rows,r=>r.kg)/h):'–'));tb.append(tr);t.append(tb);
+}
+
+/* ---------- render: farm report (entry) ---------- */
+const FIELDS=['report_date','building','batch','breed','good','defective','wmin','wmax','ave_age','planned_sale','remarks'];
+function myFarms(){const u=ME();return u.role==='GROWER'&&u.farms&&u.farms.length?u.farms:farmNames()}
+function renderReport(){
+  const farms=myFarms();if(!farms.includes(UI.rFarm))UI.rFarm=farms[0]||'';
+  fillSel('rFarm',farms,UI.rFarm,null);$('rFarm').disabled=farms.length<2;
+  fillSel('r_breed',breedNames(),$('r_breed').value||'',null);
+  const box=$('bcards');box.replaceChildren();const asOf=pd(todayYmd());
+  const list=activeBatches().filter(b=>b.farm===UI.rFarm).sort((a,b)=>String(a.building).localeCompare(String(b.building),undefined,{numeric:true}));
+  if(!list.length)box.append(el('div',{class:'card hint'},'No active batches for '+(UI.rFarm||'this farm')+' yet. Use the form below to add the first one.'));
+  list.forEach(b=>{const M=model(b,todayYmd()),age=Math.round((+b.ave_age||0)+Math.max(0,(asOf-pd(b.report_date))/DAY)),dd=Math.round((M.natural-asOf)/DAY);
+    const c=el('div',{class:'bcard'});const t=el('div',{class:'t'},(b.building||'—')+(b.batch?' · '+b.batch:''));
+    c.append(t,el('div',{class:'m'},b.breed+' · last report '+niceY(pd(b.report_date))+(b.name?' by '+b.name:'')));
+    const g=el('div',{class:'g'});[['Good hd',fmt(b.good)],['Weight',fmt(b.wmin)+'–'+fmt(b.wmax)],['Age today',age+' d']].forEach(([k,v])=>{const d=el('div');d.append(el('div',{class:'k'},k),el('div',{class:'v'},v));g.append(d)});c.append(g);
+    const st=el('div',{style:'margin-bottom:10px'});st.append(statusBadge(dd),document.createTextNode(' Ready '+niceY(M.start)));if(b._pending)st.append(document.createTextNode(' '),el('span',{class:'badge b-pend'},'not synced'));c.append(st);
+    const acts=el('div',{class:'acts'});
+    const up=el('button',{class:'btn primary sm'},'Update');up.onclick=()=>startEdit(b);
+    const sold=el('button',{class:'btn outline sm'},'Sold out / close');sold.onclick=()=>closeBatch(b);
+    acts.append(up,sold);c.append(acts);box.append(c)});
+  renderMyReports();updatePreview();
+}
+function formVals(){const o={};FIELDS.forEach(k=>{const v=$('r_'+k).value;o[k]=['good','defective','wmin','wmax','ave_age'].includes(k)?(v===''?'':+v):v.trim()});return o}
+function setForm(o){FIELDS.forEach(k=>{$('r_'+k).value=o[k]==null?'':o[k]})}
+function startNew(){UI.edit=null;setForm({report_date:todayYmd(),defective:0,breed:breedNames()[0]||''});$('formTitle').textContent='New batch report';$('rErr').textContent='';updatePreview()}
+function startEdit(b){
+  UI.edit=b;const days=Math.max(0,Math.round((pd(todayYmd())-pd(b.report_date))/DAY));
+  setForm(Object.assign({},b,{report_date:todayYmd(),ave_age:(+b.ave_age||0)+days,remarks:''}));
+  $('formTitle').textContent='Update '+(b.building||'')+(b.batch?' · '+b.batch:'');$('rErr').textContent='';
+  updatePreview();$('formCard').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('r_good').focus(),350);
+}
+function validate(v){
+  if(!UI.rFarm)return'Choose a farm.';
+  if(!v.report_date)return'Enter the report date.';
+  if(pd(v.report_date)>pd(todayYmd())+DAY)return'Report date cannot be in the future.';
+  if(!v.building)return'Enter the building.';
+  if(!v.breed)return'Choose the breed / line.';
+  if(v.good===''||v.good<0)return'Enter good heads.';
+  if(v.wmin===''||v.wmax==='')return'Enter the estimated weight range.';
+  if(v.wmin<5||v.wmax>250)return'Weight looks wrong (5–250 kg).';
+  if(v.wmax<v.wmin)return'Weight max must be at least weight min.';
+  if(v.ave_age===''||v.ave_age<20||v.ave_age>400)return'Average age looks wrong (20–400 days).';
+  return'';
+}
+function updatePreview(){
+  const v=formVals(),p=$('rPreview');p.replaceChildren();
+  if(validate(v)){p.textContent='Fill in the report to see when this batch will be ready.';return}
+  const M=model(Object.assign({farm:UI.rFarm},v),todayYmd()),L=M.lots[0],dd=Math.round((M.natural-pd(todayYmd()))/DAY);
+  p.append(el('b',null,dd<=0?'Ready to sell now':'Ready in about '+dd+' days'),document.createTextNode(' — '+niceY(M.start)+' at ~'+fmt1(L.mean)+' kg, '+fmt(L.age)+' days old. '));
+  const sh=bandShares(L.mean,L.sd);p.append(el('span',{class:'hint'},'Expected mix at sale: '+BANDS.map((b,i)=>b.k+' kg '+Math.round(sh[i]*100)+'%').filter(s=>!/ 0%$/.test(s)).join(' · ')));
+}
+function submitReport(rep,label){
+  const q={id:rep.id,fn:'submit',args:{report:rep},at:new Date().toISOString(),label};
+  QUEUE.push(q);ls.set('queue',QUEUE);renderPend();
+  flush(true);
+}
+function closeBatch(b){
+  const body=el('div');body.append(el('p',{style:'margin-top:0'},'Mark '+(b.building||'')+(b.batch?' · '+b.batch:'')+' ('+b.farm+') as sold out / closed? It will be removed from the forecast.'));
+  const lab=el('label',{class:'f'},'Remarks');const inp=el('input',{placeholder:'e.g. last 12 heads delivered Nov 20'});body.append(lab,inp);
+  modal('Close batch',body,[{text:'Cancel'},{text:'Mark sold out',cls:'primary',onClick:()=>{
+    submitReport(Object.assign({},stripMeta(b),{id:uid(),report_date:todayYmd(),status:'SOLD',good:0,defective:0,remarks:inp.value.trim()}),'close');renderView();toast('Batch closed.')}}]);
+}
+const stripMeta=b=>{const o={};['farm','building','batch','breed','good','defective','wmin','wmax','ave_age','report_date','planned_sale','status','remarks'].forEach(k=>o[k]=b[k]);return o};
+function renderMyReports(){
+  const t=$('myReports');t.replaceChildren();const u=ME();
+  const list=allReports().filter(r=>(isAdmin()?r.farm===UI.rFarm:r.username===u.username)).sort((a,b)=>String(b.submitted_at).localeCompare(String(a.submitted_at))).slice(0,25);
+  const cols=['Building / batch','Report date','Breed','Good','Def.','Weight kg','Age d','Status','By',''];
+  const th=el('thead'),hr=el('tr');cols.forEach((h,i)=>hr.append(el('th',{class:[3,4,6].includes(i)?'n':''},h)));th.append(hr);t.append(th);const tb=el('tbody');
+  if(!list.length){const tr=el('tr');tr.append(el('td',{class:'hint',colspan:cols.length},'No reports yet.'));tb.append(tr)}
+  list.forEach(r=>{const tr=el('tr');const c=(l,v,cls)=>{const td=el('td',{'data-l':l,class:cls||''});if(v instanceof Node)td.append(v);else td.textContent=v;tr.append(td)};
+    c('',(r.building||'—')+(r.batch?' · '+r.batch:''),'head');c('Report date',r.report_date?niceY(pd(r.report_date)):'');c('Breed',r.breed);c('Good',fmt(r.good),'n');c('Def.',fmt(r.defective),'n');c('Weight kg',fmt(r.wmin)+'–'+fmt(r.wmax));c('Age d',fmt(r.ave_age),'n');
+    c('Status',el('span',{class:'badge '+(r._pending?'b-pend':String(r.status).toUpperCase()==='SOLD'?'b-sold':'b-grow')},r._pending?'Not synced':String(r.status||'ACTIVE').toUpperCase()));
+    c('By',r.name||r.username||'');
+    const act=el('span');if(!r._pending){const v=el('button',{class:'btn danger sm'},'Void');v.onclick=()=>voidReport(r);act.append(v)}c('',act);tb.append(tr)});
+  t.append(tb);
+}
+function voidReport(r){
+  const body=el('div');body.append(el('p',{style:'margin-top:0'},'Void the '+niceY(pd(r.report_date))+' report for '+(r.building||'')+(r.batch?' · '+r.batch:'')+'? It stays in the sheet marked voided.'));
+  const inp=el('input',{placeholder:'Reason (e.g. wrong heads count)'});body.append(el('label',{class:'f'},'Reason'),inp);
+  modal('Void report',body,[{text:'Cancel'},{text:'Void report',cls:'danger',onClick:()=>{QUEUE.push({id:uid(),fn:'void',args:{id:r.id,reason:inp.value.trim()},at:new Date().toISOString()});ls.set('queue',QUEUE);renderPend();renderView();flush(true)}}]);
+}
+
+/* ---------- render: batches ---------- */
+function renderBatches(){
+  $('bShow').value=UI.bShow;$('bSearch').value=UI.bSearch;
+  const t=$('batchTbl');t.replaceChildren();const q=UI.bSearch.toLowerCase();
+  let list=UI.bShow==='active'?activeBatches():allReports();
+  list=list.filter(r=>(!UI.fFarm||r.farm===UI.fFarm)&&(!q||[r.farm,r.building,r.batch,r.breed,r.name,r.username,r.remarks].join(' ').toLowerCase().includes(q)))
+    .sort((a,b)=>UI.bShow==='active'?(a.farm+a.building).localeCompare(b.farm+b.building,undefined,{numeric:true}):String(b.submitted_at).localeCompare(String(a.submitted_at)));
+  const cols=['Farm / building','Batch','Breed','Good','Def.','Weight kg','Ave age','Report date','Planned sale','Status','By','Remarks'];
+  const th=el('thead'),hr=el('tr');cols.forEach((h,i)=>hr.append(el('th',{class:[3,4,6].includes(i)?'n':''},h)));th.append(hr);t.append(th);const tb=el('tbody');
+  if(!list.length){const tr=el('tr');tr.append(el('td',{class:'hint',colspan:cols.length},'Nothing to show.'));tb.append(tr)}
+  list.forEach(r=>{const tr=el('tr');const c=(l,v,cls)=>{const td=el('td',{'data-l':l,class:cls||''});if(v instanceof Node)td.append(v);else td.textContent=v;tr.append(td)};
+    c('',r.farm+' · '+(r.building||'—'),'head');c('Batch',r.batch||'—');c('Breed',r.breed);c('Good',fmt(r.good),'n');c('Def.',fmt(r.defective),'n');c('Weight kg',fmt(r.wmin)+'–'+fmt(r.wmax));c('Ave age',fmt(r.ave_age)+' d','n');
+    c('Report date',r.report_date?niceY(pd(r.report_date)):'');c('Planned sale',r.planned_sale?niceY(pd(r.planned_sale)):'—');
+    c('Status',el('span',{class:'badge '+(r._pending?'b-pend':String(r.status).toUpperCase()==='SOLD'?'b-sold':'b-grow')},r._pending?'Not synced':String(r.status||'ACTIVE').toUpperCase()));c('By',r.name||r.username||'');c('Remarks',r.remarks||'');tb.append(tr)});
+  t.append(tb);
+}
+
+/* ---------- render: settings ---------- */
+let SET=null,RENAMES=[];
+function renderSettings(){
+  if(!SET){SET={breeds:JSON.parse(JSON.stringify(DATA.breeds)),farms:JSON.parse(JSON.stringify(DATA.farms)),rules:Object.assign({},rules())};RENAMES=[]}
+  const bt=$('breedTbl');bt.replaceChildren();const h=el('tr');['Breed / line','ADG kg/d','Target kg','Mort. %/mo',''].forEach((x,i)=>h.append(el('th',{class:i&&i<4?'n':''},x)));bt.append(h);
+  SET.breeds.forEach((b,i)=>{const tr=el('tr');[['name','text'],['adg','0.01'],['target','1'],['mort','0.1']].forEach(([k,st])=>{const td=el('td');const inp=el('input',{type:st==='text'?'text':'number',step:st==='text'?'':st,style:st==='text'?'min-width:150px':'width:84px'});inp.value=b[k];
+      inp.onchange=()=>{if(k==='name'){if(b._orig==null)b._orig=b.name;b.name=inp.value.trim()}else b[k]=+inp.value};td.append(inp);tr.append(td)});
+    const x=el('button',{class:'btn sm'},'✕');x.onclick=()=>{SET.breeds.splice(i,1);renderSettings()};const td=el('td');td.append(x);tr.append(td);bt.append(tr)});
+  const ft=$('farmTbl');ft.replaceChildren();const h2=el('tr');['Farm source','Growth factor',''].forEach((x,i)=>h2.append(el('th',{class:i===1?'n':''},x)));ft.append(h2);
+  SET.farms.forEach((f,i)=>{const tr=el('tr');const a=el('td'),n=el('input',{type:'text',style:'min-width:150px'});n.value=f.name;n.onchange=()=>{if(f._orig==null)f._orig=f.name;f.name=n.value.trim()};a.append(n);
+    const b=el('td'),v=el('input',{type:'number',step:'0.01',style:'width:84px'});v.value=f.factor;v.onchange=()=>f.factor=+v.value;b.append(v);
+    const x=el('button',{class:'btn sm'},'✕');x.onclick=()=>{SET.farms.splice(i,1);renderSettings()};const c=el('td');c.append(x);tr.append(a,b,c);ft.append(tr)});
+  $('sMinAge').value=SET.rules.minAge;$('sSpread').value=SET.rules.spread;$('sInclDef').value=String(SET.rules.inclDef);
+  loadUsers();
+}
+async function saveSettings(){
+  const btn=$('saveSettings');btn.disabled=true;$('setMsg').textContent='Saving…';
+  SET.rules={minAge:+$('sMinAge').value||150,spread:Math.max(1,Math.min(8,+$('sSpread').value||2)),inclDef:+$('sInclDef').value};
+  const renames=[];SET.breeds.forEach(b=>{if(b._orig&&b._orig!==b.name)renames.push({type:'breed',from:b._orig,to:b.name})});SET.farms.forEach(f=>{if(f._orig&&f._orig!==f.name)renames.push({type:'farm',from:f._orig,to:f.name})});
+  const clean=a=>a.map(o=>{const c=Object.assign({},o);delete c._orig;return c});
+  try{await api('saveSettings',{breeds:clean(SET.breeds),farms:clean(SET.farms),rules:SET.rules,renames});SET=null;await load(true);$('setMsg').textContent='Saved.';toast('Settings saved to the sheet.')}
+  catch(e){$('setMsg').textContent='';toast(e.message,true)}
+  btn.disabled=false;
+}
+async function loadUsers(){
+  const t=$('userTbl');t.replaceChildren(el('tr',null));t.firstChild.append(el('td',{class:'hint'},'Loading users…'));
+  try{const r=await api('listUsers',{});t.replaceChildren();
+    const th=el('thead'),hr=el('tr');['Name','Username','Role','Farm','Active',''].forEach(h=>hr.append(el('th',null,h)));th.append(hr);t.append(th);const tb=el('tbody');
+    r.users.forEach(u=>{const tr=el('tr');const c=(l,v,cls)=>{const td=el('td',{'data-l':l,class:cls||''});if(v instanceof Node)td.append(v);else td.textContent=v;tr.append(td)};
+      c('',u.name,'head');c('Username',u.username);c('Role',u.role);c('Farm',u.farm||'All');c('Active',u.active?'Yes':'No');const e=el('button',{class:'btn sm'},'Edit');e.onclick=()=>editUser(u);c('',e);tb.append(tr)});t.append(tb)}
+  catch(e){t.replaceChildren();const tr=el('tr');tr.append(el('td',{class:'err'},e.message));t.append(tr)}
+}
+function editUser(u){
+  const isNew=!u;u=u||{username:'',name:'',role:'GROWER',farm:'',active:true};
+  const body=el('div',{class:'fgrid'});
+  const f=(lab,node,cls)=>{const d=el('div',{class:cls||'s2'});d.append(el('label',{class:'f'},lab),node);body.append(d);return node};
+  const un=f('Username',el('input',{autocapitalize:'none'}));un.value=u.username;un.disabled=!isNew;
+  const nm=f('Full name',el('input'));nm.value=u.name||'';
+  const rl=f('Role',el('select'));['GROWER','VIEWER','ADMIN'].forEach(r=>{const o=el('option',{value:r},r);if(r===u.role)o.selected=true;rl.append(o)});
+  const fm=f('Farm (growers)',el('select'));fm.append(el('option',{value:''},'All farms'));farmNames().forEach(n=>{const o=el('option',{value:n},n);if(n===u.farm)o.selected=true;fm.append(o)});
+  const pn=f(isNew?'Starting PIN (4–6 digits)':'Reset PIN (leave blank to keep)',el('input',{inputmode:'numeric'}));
+  const ac=f('Active',el('select'));[['true','Yes'],['false','No']].forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(u.active!==false)===v)o.selected=true;ac.append(o)});
+  const er=el('div',{class:'err s4'});body.append(er);
+  modal(isNew?'Add user':'Edit user',body,[{text:'Cancel'},{text:'Save',cls:'primary',onClick:async()=>{
+    try{await api('saveUser',{username:un.value.trim().toLowerCase(),name:nm.value.trim(),role:rl.value,farm:fm.value,pin:pn.value.trim(),active:ac.value==='true'});toast('User saved.');loadUsers();return true}
+    catch(e){er.textContent=e.message;return false}}}]);
+}
+
+/* ---------- sync ---------- */
+let flushing=false;
+async function flush(quiet){
+  if(flushing||!QUEUE.length)return;if(!navigator.onLine){renderPend();if(!quiet)toast('You are offline. Reports stay on this device until you reconnect.',true);return}
+  flushing=true;let sent=0,err=null;
+  for(const q of QUEUE.slice()){
+    try{await api(q.fn,q.args);QUEUE=QUEUE.filter(x=>x!==q);ls.set('queue',QUEUE);sent++}
+    catch(e){if(e.expired){err=e;break}if(e.network){err=e;break}
+      // server rejected (validation): drop it and tell the user
+      QUEUE=QUEUE.filter(x=>x!==q);ls.set('queue',QUEUE);toast('Not saved: '+e.message,true)}
+  }
+  flushing=false;renderPend();
+  if(sent){await load(true);if(!quiet||sent)toast(sent+' saved to the Google Sheet ✓')}
+  if(err){if(err.expired)return logout(err.message);if(!quiet)toast(err.message+' Reports are kept on this device.',true)}
+}
+async function load(silent){
+  const b=$('btnSync');b.disabled=true;b.replaceChildren(el('span',{class:'spin'}),document.createTextNode(' Syncing'));
+  try{const r=await api('data',{});DATA={reports:r.reports||[],breeds:r.breeds||[],farms:r.farms||[],rules:r.rules||{}};ls.set('cache',DATA);ls.set('cacheAt',Date.now());
+    if(r.user){SESSION.user=r.user;ls.set('session',SESSION)}
+    renderShell();renderView();if(!silent)toast('Up to date ✓')}
+  catch(e){if(e.expired)return logout(e.message);if(!silent)toast(e.message+' Showing the last saved data.',true)}
+  finally{b.disabled=false;b.textContent='⟳ Sync'}
+}
+
+/* ---------- auth ---------- */
+async function doLogin(e){
+  e.preventDefault();const b=$('lgBtn');b.disabled=true;b.textContent='Signing in…';$('lgErr').textContent='';
+  try{const r=await api('login',{username:$('lgUser').value.trim().toLowerCase(),pin:$('lgPin').value});
+    SESSION={token:r.token,exp:r.exp,user:r.user};ls.set('session',SESSION);$('lgPin').value='';
+    if(ls.get('cacheUser','')!==r.user.username){DATA={reports:[],breeds:[],farms:[],rules:{}};ls.del('cache')}
+    ls.set('cacheUser',r.user.username);startApp();if(r.user.mustChangePin)changePin(true)}
+  catch(err){$('lgErr').textContent=err.message}
+  b.disabled=false;b.textContent='Sign in';
+}
+function changePin(forced){
+  const body=el('div');const o=el('input',{type:'password',inputmode:'numeric'}),n=el('input',{type:'password',inputmode:'numeric'}),n2=el('input',{type:'password',inputmode:'numeric'}),er=el('div',{class:'err'});
+  if(forced)body.append(el('p',{style:'margin-top:0'},'Please set your own PIN before continuing.'));
+  [['Current PIN',o],['New PIN (4–6 digits)',n],['Repeat new PIN',n2]].forEach(([l,i])=>{body.append(el('label',{class:'f',style:'margin-top:10px'},l),i)});body.append(er);
+  modal('Change PIN',body,[{text:forced?'Later':'Cancel'},{text:'Save PIN',cls:'primary',onClick:async()=>{
+    if(!/^\d{4,6}$/.test(n.value)){er.textContent='PIN must be 4–6 digits.';return false}if(n.value!==n2.value){er.textContent='New PINs do not match.';return false}
+    try{await api('changePin',{oldPin:o.value,newPin:n.value});toast('PIN changed.');return true}catch(e){er.textContent=e.message;return false}}}]);
+}
+function logout(msg){
+  if(QUEUE.length&&!msg){modal('Unsent reports',QUEUE.length+' report(s) are not yet in the Google Sheet. Sign out anyway? They stay on this device and send next time you sign in.',[{text:'Stay'},{text:'Sign out',cls:'danger',onClick:()=>doOut()}]);return}
+  doOut(msg);
+}
+function doOut(msg){try{if(SESSION)api('logout',{}).catch(()=>{})}catch(e){}SESSION=null;ls.del('session');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('lgErr').textContent=msg||''}
+function menu(){
+  const body=el('div',{style:'display:grid;gap:8px'});
+  const b=(t,fn,cls)=>{const x=el('button',{class:'btn block '+(cls||'')},t);x.onclick=()=>{close();fn()};body.append(x)};
+  b('Change my PIN',()=>changePin(false));
+  if(CFG.homeUrl&&/^https?:/.test(CFG.homeUrl)){const a=el('a',{href:CFG.homeUrl,class:'btn block',style:'text-align:center;text-decoration:none'},'Open Sales Dashboard');body.append(a)}
+  b('Print this page',()=>window.print());
+  b('Sign out',()=>logout(),'danger');
+  body.append(el('div',{class:'hint',style:'text-align:center;margin-top:4px'},DEMO?'Demo mode':'Last sync: '+(ls.get('cacheAt',0)?new Date(ls.get('cacheAt',0)).toLocaleString():'never')));
+  const close=modal('Menu',body,[]);
+}
+
+/* ---------- events ---------- */
+function bind(){
+  $('loginForm').addEventListener('submit',doLogin);
+  $('btnSync').onclick=async()=>{await flush(false);await load(false)};
+  $('btnMenu').onclick=menu;
+  $('pendGo').onclick=()=>flush(false);
+  document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{const d=+b.dataset.fs;FS=d===0?1:Math.max(.85,Math.min(1.3,FS+d*.1));document.documentElement.style.setProperty('--fs',FS);ls.set('fs',FS);renderView()});
+  $('asOf').onchange=e=>{if(pd(e.target.value)){UI.asOf=e.target.value;UI.invDate=null;renderView()}};
+  $('gran').onchange=e=>{UI.gran=e.target.value;renderView()};
+  $('groupBy').onchange=e=>{UI.groupBy=e.target.value;renderForecast()};
+  ['fFarm','fFarm2','fFarm3'].forEach(id=>$(id).onchange=e=>{UI.fFarm=e.target.value;renderView()});
+  ['fBreed','fBreed2'].forEach(id=>$(id).onchange=e=>{UI.fBreed=e.target.value;renderView()});
+  $('invDate').onchange=e=>{UI.invDate=e.target.value;renderInv()};
+  $('bShow').onchange=e=>{UI.bShow=e.target.value;renderBatches()};
+  $('bSearch').oninput=e=>{UI.bSearch=e.target.value;renderBatches()};
+  $('rFarm').onchange=e=>{UI.rFarm=e.target.value;startNew();renderReport()};
+  $('formNew').onclick=()=>{startNew();$('r_building').focus()};
+  $('rClear').onclick=()=>startNew();
+  $('rForm').addEventListener('input',updatePreview);
+  $('rForm').addEventListener('submit',e=>{e.preventDefault();const v=formVals(),bad=validate(v);$('rErr').textContent=bad;if(bad)return;
+    const rep=Object.assign({id:uid(),farm:UI.rFarm,status:'ACTIVE'},v);
+    if(!UI.edit&&activeBatches().some(b=>bkey(b)===bkey(rep))&&!confirmDup(rep))return;
+    submitReport(rep,'report');toast(navigator.onLine?'Report sent ✓':'Saved on this device — will send when online');startNew();renderReport();window.scrollTo({top:0,behavior:'smooth'})});
+  $('saveSettings').onclick=saveSettings;
+  $('addBreed').onclick=()=>{SET.breeds.push({name:'New breed',adg:0.8,target:110,mort:0.5});renderSettings()};
+  $('addFarm').onclick=()=>{SET.farms.push({name:'New farm',factor:1});renderSettings()};
+  $('addUser').onclick=()=>editUser(null);
+  $('copyDetail').onclick=async e=>{const txt=[...$('detail').rows].map(r=>[...r.cells].map(c=>c.textContent).join('\t')).join('\n');try{await navigator.clipboard.writeText(txt);toast('Table copied — paste into Excel or Sheets.')}catch(er){toast('Copy not allowed here.',true)}};
+  window.addEventListener('online',()=>{renderNet();renderPend();flush(true)});
+  window.addEventListener('offline',()=>{renderNet();renderPend()});
+  let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(UI.view==='forecast')renderForecast()},150)});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SESSION){flush(true);if(Date.now()-ls.get('cacheAt',0)>5*60e3)load(true)}});
+}
+let dupOK=false;
+function confirmDup(rep){ // existing batch with same code but user didn't tap Update: still allowed, it becomes the latest report
+  if(dupOK){dupOK=false;return true}
+  modal('Batch already exists',(rep.batch||rep.building)+' already has an active report on '+UI.rFarm+'. Submit this as its newest update?',[{text:'Cancel'},{text:'Yes, submit',cls:'primary',onClick:()=>{dupOK=true;$('rSubmit').click()}}]);
+  return false;
+}
+
+function startApp(){
+  $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
+  UI.view=ls.get('view',ME().role==='GROWER'?'report':'forecast');
+  if(ME().role==='GROWER'&&ME().farms.length===1)UI.fFarm='';
+  renderShell();startNew();renderView();load(true).then(()=>flush(true));
+}
+bind();
+$('lgDemo').classList.toggle('hidden',!DEMO);
+if(SESSION&&SESSION.token&&SESSION.exp>Date.now())startApp();else{SESSION=null;$('loginView').classList.remove('hidden')}
+})();
+</script>
+</body>
+</html>
