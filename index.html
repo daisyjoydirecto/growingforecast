@@ -176,6 +176,7 @@ td.pos{color:var(--ok)}td.neg{color:var(--red)}
 .tiles.pick .tile:hover:not(.empty){border-color:var(--olive)}
 .tiles.pick .tile.sel{outline:3px solid var(--lime);outline-offset:-1px;background:var(--soft)}
 .tiles.pick .tile.empty{cursor:not-allowed}
+.tiles.pick.need{outline:2px dashed var(--red);outline-offset:4px;border-radius:3px}
 .rlist{display:flex;flex-direction:column;max-height:720px;overflow:auto}
 .rlist .it{border-bottom:1px solid var(--line);padding:8px 2px;display:flex;flex-direction:column;gap:3px}
 .rlist .it:last-child{border-bottom:0}
@@ -1058,6 +1059,24 @@ function renderPullout(){
 }
 function pVals(){const o={date:$('p_date').value,farm:UI.pFarm,building:UI.pBld||'',type:UI.pType,customer:$('p_customer').value.trim(),ref_no:$('p_ref_no').value.trim(),remarks:$('p_remarks').value.trim(),kg:$('p_kg').value===''?'':+$('p_kg').value};BANDS.forEach(b=>o[b.f]=Math.max(0,Math.round(+$('p_'+b.f).value||0)));o.heads=sum(BANDS,b=>o[b.f]);return o}
 const pOverride=()=>isAdmin()&&!!UI.pOvr;
+// Admin override: correct the building's inventory so it covers this pull-out (books balance, analysis shows the real heads).
+// Writes an inventory-adjustment farm report dated the day before the pull-out (or the latest report date if later).
+function overrideAdjust(v,reason){
+  const {b,avail}=availFor(v.farm,v.building),bn=String(v.building).trim();
+  const hist=allReports().filter(r=>r.farm===v.farm&&String(r.building).trim()===bn).sort((x,y)=>(x.report_date+x.submitted_at).localeCompare(y.report_date+y.submitted_at));
+  const base=b||hist[hist.length-1]||null;
+  let adjDate=ymd(pd(v.date)-DAY);if(b&&b.report_date>adjDate)adjDate=b.report_date;
+  const later=sum(allPullouts().filter(p=>p.farm===v.farm&&String(p.building).trim()===bn&&p.date>adjDate),p=>p.heads);
+  const set=later+v.heads,R=rules();
+  let age=base?(+base.ave_age||0)+Math.max(0,Math.round((pd(adjDate)-pd(base.report_date))/DAY)):R.targetAge;
+  let wmin=base?+base.wmin:90,wmax=base?+base.wmax:99;
+  if(v.kg&&v.heads){const m=v.kg/v.heads,i=WR.findIndex(x=>m>=x.a&&m<=x.b+0.99);if(i>=0){wmin=WR[i].a;wmax=WR[i].b}}
+  const adj={id:uid(),farm:v.farm,building:bn,batch:'',breed:base?base.breed:'',good:set,defective:0,wmin,wmax,ave_age:age,report_date:adjDate,planned_sale:'',status:'ACTIVE',
+    remarks:'[INVENTORY ADJUSTMENT · admin override: '+reason+' · was '+(b?avail:0)+' hd, set to '+set+' hd so the '+nice(pd(v.date))+' pull-out of '+v.heads+' hd balances]'};
+  const reports=[adj];
+  if(!b)reports.push(Object.assign({},adj,{id:uid(),good:0,defective:0,status:'SOLD',report_date:v.date,remarks:'[AUTO-CLOSE · building had no batch before the admin override pull-out]'}));
+  return{reports,was:b?avail:0,set};
+}
 function pExceeds(v){if(!v.building)return false;const {b,avail}=availFor(v.farm,v.building);return !b||v.heads>avail}
 function pCheck(v){
   if(!v.building)return'Tap the building the hogs came from.';
@@ -1081,8 +1100,9 @@ function updatePAuto(){
   if(v.heads&&v.kg)box.append(el('div',{class:'hint',style:'margin-top:6px'},'Avg live weight: '+fmt1(v.kg/v.heads)+' kg/head'));
   const over=pExceeds(v)&&v.heads>0,bad=pCheck(v),ovOk=over&&pOverride()&&!bad;
   box.classList.toggle('over',over&&!ovOk);box.classList.toggle('warn',!!ovOk);
-  if(ovOk)box.append(el('div',{class:'ovnote'},'⚠ Admin override: '+(b?v.heads+' hd vs '+avail+' hd recorded':'no active batch in '+v.building)+'. It will be saved with your reason and flagged in the remarks.'));
-  $('pErr').textContent=over?bad:'';
+  if(ovOk)box.append(el('div',{class:'ovnote'},'⚠ Admin override: '+(b?v.heads+' hd vs '+avail+' hd recorded':'no active batch in '+v.building)+'. On save, the inventory of '+v.building+' is adjusted so this pull-out balances (remaining 0), and both entries are flagged with your reason.'));
+  $('pErr').textContent=(over||v.heads>0||v.building)?bad:'';
+  $('pTiles').classList.toggle('need',!v.building&&v.heads>0);
   $('pSubmit').disabled=!canEnter()||!!bad;
   $('pSubmit').textContent=v.heads>0?'Save '+(PTYPES.find(p=>p.k===v.type)||{}).t.toLowerCase()+' · '+v.heads+' hd':'Save pull-out';
 }
@@ -1484,7 +1504,9 @@ let flushing=false;
 async function flush(quiet){
   if(flushing||!QUEUE.length)return;if(!navigator.onLine){renderPend();if(!quiet)toast('You are offline. Entries stay on this device until you reconnect.',true);return}
   flushing=true;let sent=0,err=null;
-  for(const q of QUEUE.slice()){
+  const tried=new Set();
+  while(QUEUE.length){
+    const q=QUEUE.find(x=>!tried.has(x));if(!q)break;tried.add(q);
     try{await api(q.fn,q.args);QUEUE=QUEUE.filter(x=>x!==q);ls.set('queue',QUEUE);sent++}
     catch(e){if(e.expired||e.network){err=e;break}QUEUE=QUEUE.filter(x=>x!==q);ls.set('queue',QUEUE);toast('Not saved: '+e.message,true)}
   }
@@ -1553,7 +1575,11 @@ function bind(){
   $('pOvr').onchange=e=>{UI.pOvr=e.target.checked;if(!UI.pOvr){$('pOvrReason').value='';if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b)UI.pBld=''}renderPullout();if(UI.pOvr)$('pOvrReason').focus()};
   $('pForm').addEventListener('submit',e=>{e.preventDefault();if(!canEnter())return;const v=pVals(),bad=pCheck(v);
     $('pErr').textContent=bad;if(bad)return;
-    const po=Object.assign({id:uid()},v);if(pOverride()&&pExceeds(v)){po.override=true;po.override_reason=$('pOvrReason').value.trim()}
+    const po=Object.assign({id:uid()},v);
+    if(pOverride()&&pExceeds(v)){const reason=$('pOvrReason').value.trim(),adj=overrideAdjust(v,reason);
+      if(adj.reports.length)queuePush('submitMany',{reports:adj.reports});
+      po.remarks='[ADMIN OVERRIDE: '+reason+' · inventory '+adj.was+' hd → adjusted to '+adj.set+' hd] '+(po.remarks||'');
+      po.override=true;po.override_reason=reason}
     queuePush('submitPullout',{pullout:po});UI.pOvr=false;$('pOvrReason').value='';toast((PTYPES.find(p=>p.k===v.type)||{}).t+' · '+v.heads+' hd '+(navigator.onLine?'sent ✓':'saved on this device'));
     BANDS.forEach(b=>$('p_'+b.f).value='');['p_kg','p_ref_no','p_remarks','p_customer'].forEach(id=>$(id).value='');renderPullout()});
   // forecast
