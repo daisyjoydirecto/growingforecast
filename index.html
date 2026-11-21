@@ -438,7 +438,7 @@ table.wbt .sw{display:inline-block;width:11px;height:11px;border-radius:3px;marg
             <button type="button" class="type mort" data-t="MORTALITY"><span class="ti">✖</span>Mortality</button>
           </div>
           <div class="step"><span class="num">2</span>Building <span class="hint" style="font-weight:400;margin-left:6px">tap one with live hogs</span></div>
-          <div class="ovr hidden" id="pOvrBox"><label><input type="checkbox" id="pOvr"> <b>Admin override</b> — allow an empty building or more heads than the inventory</label><input id="pOvrReason" class="hidden" placeholder="Reason for override (required)"></div>
+          <div class="ovr hidden" id="pOvrBox"><label><input type="checkbox" id="pOvr"> <b>Admin override</b> — no building needed (takes from the whole farm), or pick any building even above its inventory</label><input id="pOvrReason" class="hidden" placeholder="Reason for override (required)"></div>
           <div class="tiles pick" id="pTiles"></div>
           <input type="hidden" id="p_building">
           <div class="step"><span class="num">3</span>Details</div>
@@ -1049,7 +1049,7 @@ function renderPullout(){
   if(!isAdmin())UI.pOvr=false;$('pOvrBox').classList.toggle('hidden',!isAdmin());$('pOvr').checked=!!UI.pOvr;$('pOvrReason').classList.toggle('hidden',!UI.pOvr);
   if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b&&!UI.pOvr)UI.pBld='';
   if(!blds.length)box.append(el('div',{class:'hint'},'No buildings for this farm yet.'));
-  blds.forEach(bn=>{const t=tileFor(bn,UI.pFarm,{pick:true,allowEmpty:isAdmin()&&UI.pOvr});if(bn===UI.pBld)t.classList.add('sel');if(!t.disabled)t.onclick=()=>{UI.pBld=bn;renderPullout()};box.append(t)});
+  blds.forEach(bn=>{const t=tileFor(bn,UI.pFarm,{pick:true,allowEmpty:isAdmin()&&UI.pOvr});if(bn===UI.pBld)t.classList.add('sel');if(!t.disabled)t.onclick=()=>{UI.pBld=(UI.pBld===bn&&pOverride())?'':bn;renderPullout()};box.append(t)});
   $('p_building').value=UI.pBld||'';
   if(!$('pBands').children.length){BANDS.forEach(b=>{const d=el('div',{class:'bandbox'}),l=el('div',{class:'bl'}),i=el('i');i.style.background=cssv(b.c);l.append(i,document.createTextNode(b.k+' kg'));
     const st=el('div',{class:'stepper'}),mi=el('button',{type:'button','aria-label':'minus'},'−'),inp=el('input',{type:'number',inputmode:'numeric',min:'0',id:'p_'+b.f,placeholder:'0'}),pl=el('button',{type:'button','aria-label':'plus'},'+');
@@ -1077,8 +1077,31 @@ function overrideAdjust(v,reason){
   if(!b)reports.push(Object.assign({},adj,{id:uid(),good:0,defective:0,status:'SOLD',report_date:v.date,remarks:'[AUTO-CLOSE · building had no batch before the admin override pull-out]'}));
   return{reports,was:b?avail:0,set};
 }
+// Farm-level pull-out (admin override, no building tapped): take heads from the farm's live buildings,
+// most-ready first (for sale, then heaviest). Heaviest bands go to the most-ready buildings.
+// Anything above the farm total is added to the first building as an inventory adjustment.
+const pFarmMode=v=>pOverride()&&!v.building;
+function farmAlloc(v){
+  const T=pd(todayYmd());
+  const rows=buildingsOf(v.farm).map(bn=>Object.assign({bn},availFor(v.farm,bn))).filter(x=>x.b&&x.avail>0).map(x=>{const M=model(x.b,todayYmd()),s=M.at(T),st=statusAt(M,T);return Object.assign(x,{rank:st.k==='sale'?0:st.k==='flag'?1:2,mean:s.mean})});
+  rows.sort((a,b)=>a.rank-b.rank||b.mean-a.mean||a.bn.localeCompare(b.bn,undefined,{numeric:true}));
+  const total=sum(rows,x=>x.avail);let left=v.heads;const parts=[];
+  rows.forEach(x=>{if(left<=0)return;const take=Math.min(left,x.avail);parts.push({bn:x.bn,avail:x.avail,take,adjust:false});left-=take});
+  const excess=Math.max(0,left);if(excess&&parts.length){parts[0].take+=excess;parts[0].adjust=true}
+  // split band counts: heaviest band first into the first parts
+  const pool=[];for(let i=BANDS.length-1;i>=0;i--)pool.push([i,+v[BANDS[i].f]||0]);
+  parts.forEach(pt=>{pt.b=BANDS.map(()=>0);let need=pt.take;for(const e of pool){if(!need)break;const t=Math.min(need,e[1]);pt.b[e[0]]+=t;e[1]-=t;need-=t}});
+  return{parts,total,excess};
+}
 function pExceeds(v){if(!v.building)return false;const {b,avail}=availFor(v.farm,v.building);return !b||v.heads>avail}
 function pCheck(v){
+  if(pFarmMode(v)){
+    if(!v.date)return'Enter the date.';if(pd(v.date)>pd(todayYmd()))return'Date cannot be in the future.';
+    if(!(v.heads>0))return'Enter heads in at least one weight category.';
+    if(!farmAlloc(v).parts.length)return'No live hogs recorded on '+v.farm+'. Tap a building to adjust its inventory.';
+    if(!$('pOvrReason').value.trim())return'Admin override: type the reason.';
+    return'';
+  }
   if(!v.building)return'Tap the building the hogs came from.';
   const {b,avail}=availFor(v.farm,v.building);
   if(!v.date)return'Enter the date.';if(pd(v.date)>pd(todayYmd()))return'Date cannot be in the future.';
@@ -1090,7 +1113,21 @@ function pCheck(v){
   return'';
 }
 function updatePAuto(){
-  const v=pVals(),box=$('pSum');box.replaceChildren();box.classList.remove('over');
+  const v=pVals(),box=$('pSum');box.replaceChildren();box.classList.remove('over');box.classList.remove('warn');
+  if(pFarmMode(v)){
+    BANDS.forEach(bd=>{const e=$('pest_'+bd.f);if(e)e.textContent=' '});
+    const A=farmAlloc(v),bad=pCheck(v),g=el('div',{class:'sg'}),it=(k,val)=>{const d=el('div');d.append(el('div',{class:'k'},k),el('div',{class:'v'},val));g.append(d)};
+    it('Building','Whole farm');it('Live hogs on farm',fmt(A.total)+' hd');it('This pull-out',fmt(v.heads)+' hd');it('Remaining on farm',fmt(Math.max(0,A.total-v.heads))+' hd');box.append(g);
+    const m=el('div',{class:'meter'}),f=el('div');f.style.width=Math.min(100,A.total?v.heads/A.total*100:0)+'%';m.append(f);box.append(m);
+    if(v.heads&&v.kg)box.append(el('div',{class:'hint',style:'margin-top:6px'},'Avg live weight: '+fmt1(v.kg/v.heads)+' kg/head'));
+    box.classList.add('warn');
+    if(v.heads>0&&A.parts.length)box.append(el('div',{class:'ovnote'},'⚠ Admin override · whole farm: deducts from '+A.parts.map(p=>p.bn+' '+p.take+' hd').join(' · ')+(A.excess?' — '+A.excess+' hd above the farm total is added to '+A.parts[0].bn+' as an inventory adjustment':'')+'. Most-ready buildings first.'));
+    else box.append(el('div',{class:'ovnote'},'⚠ Admin override · whole farm: no building needed — heads come off the farm total, most-ready buildings first. Tap a building only if you want a specific one.'));
+    $('pErr').textContent=v.heads>0?bad:'';$('pTiles').classList.remove('need');
+    $('pSubmit').disabled=!canEnter()||!!bad;
+    $('pSubmit').textContent=v.heads>0?'Save '+(PTYPES.find(p=>p.k===v.type)||{}).t.toLowerCase()+' · '+v.heads+' hd (whole farm)':'Save pull-out';
+    return;
+  }
   const {b,avail}=v.building?availFor(v.farm,v.building):{b:null,avail:0};
   BANDS.forEach(bd=>{const e=$('pest_'+bd.f);if(e)e.textContent=' '});
   if(b){const M=model(b,todayYmd()),s=M.at(pd(v.date||todayYmd())),sh=bandShares(s.mean,s.sd);BANDS.forEach((bd,i)=>{const e=$('pest_'+bd.f);if(e)e.textContent='est. in bldg ~'+fmt(avail*sh[i])})}
@@ -1575,6 +1612,13 @@ function bind(){
   $('pOvr').onchange=e=>{UI.pOvr=e.target.checked;if(!UI.pOvr){$('pOvrReason').value='';if(UI.pBld&&!availFor(UI.pFarm,UI.pBld).b)UI.pBld=''}renderPullout();if(UI.pOvr)$('pOvrReason').focus()};
   $('pForm').addEventListener('submit',e=>{e.preventDefault();if(!canEnter())return;const v=pVals(),bad=pCheck(v);
     $('pErr').textContent=bad;if(bad)return;
+    if(pFarmMode(v)){const reason=$('pOvrReason').value.trim(),A=farmAlloc(v),split=A.parts.map(p=>p.bn+' '+p.take).join(' + ');
+      A.parts.forEach(pt=>{const pv=Object.assign({},v,{building:pt.bn,heads:pt.take});BANDS.forEach((bd,i)=>pv[bd.f]=pt.b[i]);
+        if(pt.adjust){const adj=overrideAdjust(pv,reason);if(adj.reports.length)queuePush('submitMany',{reports:adj.reports})}});
+      A.parts.forEach(pt=>{const po=Object.assign({id:uid()},v,{building:pt.bn,heads:pt.take,kg:v.kg===''?'':Math.round(v.kg*pt.take/v.heads*10)/10,override:true,override_reason:reason});BANDS.forEach((bd,i)=>po[bd.f]=pt.b[i]);
+        po.remarks='[ADMIN OVERRIDE · whole farm '+v.heads+' hd: '+reason+' · split '+split+(pt.adjust?' · inventory adjusted':'')+'] '+(v.remarks||'');queuePush('submitPullout',{pullout:po})});
+      UI.pOvr=false;$('pOvrReason').value='';toast((PTYPES.find(p=>p.k===v.type)||{}).t+' · '+v.heads+' hd from '+v.farm+' ('+A.parts.length+' building'+(A.parts.length>1?'s':'')+') '+(navigator.onLine?'sent ✓':'saved on this device'));
+      BANDS.forEach(b=>$('p_'+b.f).value='');['p_kg','p_ref_no','p_remarks','p_customer'].forEach(id=>$(id).value='');renderPullout();return}
     const po=Object.assign({id:uid()},v);
     if(pOverride()&&pExceeds(v)){const reason=$('pOvrReason').value.trim(),adj=overrideAdjust(v,reason);
       if(adj.reports.length)queuePush('submitMany',{reports:adj.reports});
