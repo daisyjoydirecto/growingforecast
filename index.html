@@ -679,7 +679,7 @@ const demo={
     if(fn==='submitPullout'){const p=a.pullout,b=farmBad(p.farm);if(b)return{ok:false,error:b};if(d.pullouts.some(x=>x.id===p.id))return{ok:true};const iv=avail(p.farm,p.building);const ex=!iv.batch||p.heads>iv.avail;if(ex){if(u.role!=='ADMIN'||!p.override){if(!iv.batch)return{ok:false,error:p.building+' has no active batch.'};return{ok:false,error:'Pull-out ('+p.heads+' hd) is more than the inventory in '+p.building+' ('+iv.avail+' hd).'}}if(!String(p.override_reason||'').trim())return{ok:false,error:'Admin override needs a reason.'};p.remarks='[ADMIN OVERRIDE: '+p.override_reason+' · inventory '+(iv.batch?iv.avail:0)+' hd] '+(p.remarks||'')}if(!d.pullouts.some(x=>x.id===p.id))d.pullouts.push(Object.assign({},p,{submitted_at:new Date().toISOString(),username:u.username,name:u.name}));this.save(d);return{ok:true}}
     if(fn==='void'){if(u.role!=='ADMIN')return{ok:false,error:'Only an admin can void entries.'};const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:true};r.voided=true;this.save(d);return{ok:true}}
     if(fn==='edit'){const list=a.sheet==='Pullouts'?d.pullouts:d.reports,r=list.find(x=>x.id===a.id);if(!r)return{ok:false,error:'Entry not found.'};const b=farmBad(r.farm);if(b)return{ok:false,error:b};const n=Object.assign({},r,a.fields);if(a.sheet==='Pullouts'){n.heads=['h_u90','h_90_120','h_121_130','h_131'].reduce((s,k)=>s+(+n[k]||0),0);const iv=avail(r.farm,r.building,r.id);if(iv.batch&&n.heads>iv.avail){if(u.role!=='ADMIN'||!a.override)return{ok:false,error:'Pull-out ('+n.heads+' hd) is more than the inventory ('+iv.avail+' hd).'};n.remarks='[ADMIN OVERRIDE: '+a.override_reason+' · inventory '+iv.avail+' hd] '+String(n.remarks||'').replace(/^\[ADMIN OVERRIDE:[^\]]*\]\s*/,'')}}Object.assign(r,n,{edited_at:new Date().toISOString(),edited_by:u.username});this.save(d);return{ok:true}}
-    if(fn==='saveSnapshot'){if(u.role==='MANAGER')return{ok:false,error:'Sup/Manager accounts are view-only.'};if(d.snapshots.some(s=>s.snap_id===a.snap_id))return{ok:true};if(a.kind==='auto'&&d.snapshots.some(s=>s.kind==='auto'&&s.week_key===a.week_key))return{ok:true,skipped:true};const at=a.taken_at||new Date().toISOString();a.rows.forEach(r=>d.snapshots.push(Object.assign({snap_id:a.snap_id,taken_at:at,username:u.username,kind:a.kind,week_key:a.week_key,as_of:a.as_of},r)));this.save(d);return{ok:true}}
+    if(fn==='saveSnapshot'){if(u.role==='MANAGER')return{ok:false,error:'Sup/Manager accounts are view-only.'};if(d.snapshots.some(s=>s.snap_id===a.snap_id))return{ok:true};if(a.kind==='auto'&&d.snapshots.some(s=>s.kind==='auto'&&s.week_key===a.week_key)){if(!a.replace)return{ok:true,skipped:true};d.snapshots=d.snapshots.filter(s=>!(s.kind==='auto'&&s.week_key===a.week_key))}const at=a.taken_at||new Date().toISOString();a.rows.forEach(r=>d.snapshots.push(Object.assign({snap_id:a.snap_id,taken_at:at,username:u.username,kind:a.kind,week_key:a.week_key,as_of:a.as_of},r)));this.save(d);return{ok:true}}
     if(fn==='saveSettings'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};if(a.breeds)d.breeds=a.breeds;if(a.farms)d.farms=a.farms;if(a.rules)d.rules=a.rules;(a.renames||[]).forEach(x=>{d.reports.concat(d.pullouts,d.snapshots).forEach(r=>{if(x.type==='farm'&&r.farm===x.from)r.farm=x.to;if(x.type==='breed'&&r.breed===x.from)r.breed=x.to})});this.save(d);return{ok:true}}
     if(fn==='listUsers')return{ok:true,users:d.users.map(x=>({username:x.username,name:x.name,role:x.role,farm:x.farm,active:x.active}))};
     if(fn==='saveUser'){if(u.role!=='ADMIN')return{ok:false,error:'Admins only.'};let x=d.users.find(z=>z.username===a.username);if(!x){if(!a.pin)return{ok:false,error:'Give the new user a starting PIN.'};x={username:a.username};d.users.push(x)}Object.assign(x,{name:a.name,role:a.role,farm:a.farm,active:a.active!==false});if(a.pin)x.pin=String(a.pin);this.save(d);return{ok:true}}
@@ -1279,7 +1279,9 @@ function analysisData(){
   const pulls=allPullouts().filter(p=>farmOk(p.farm)&&pd(p.date)>=from&&pd(p.date)<=to);
   weeks.forEach(w=>{
     let base=fixed;if(!fixed){for(const s of snaps){if(pd(s.as_of)<=w)base=s}}
-    const wk=ymd(w),f=base?base.rows.filter(r=>r.week_start===wk&&farmOk(r.farm)&&bandOk(r.band)):[];
+    const wk=ymd(w);
+    if(base&&!base.rows.some(r=>r.week_start===wk)&&(wk<base.rows.reduce((m,r)=>r.week_start<m?r.week_start:m,'9999')||wk>base.rows.reduce((m,r)=>r.week_start>m?r.week_start:m,'')))base=null; // week outside what that forecast covers
+    const f=base?base.rows.filter(r=>r.week_start===wk&&farmOk(r.farm)&&bandOk(r.band)):[];
     const pw=pulls.filter(p=>monday(pd(p.date))===w);
     const bandHeads=(p,band)=>band?(+p[BANDS.find(b=>b.k===band).f]||0):(+p.heads||0);
     const fByFarm={},aByFarm={},fByBand={},aByBand={};
@@ -1300,18 +1302,21 @@ function renderAnalysis(){
   const ty=$('aTypes');if(ty.children.length<2){PTYPES.forEach(p=>{const l=el('label'),c=el('input',{type:'checkbox',value:p.k});c.checked=UI.aTypes.includes(p.k);c.onchange=()=>{UI.aTypes=$$('#aTypes input:checked').map(x=>x.value);renderAnalysis()};l.append(c,document.createTextNode(p.t));ty.append(l)})}
   const wbm=UI.aMode==='wb';$$('#aMode button').forEach(b=>b.classList.toggle('on',b.dataset.a===UI.aMode));$('aFvp').classList.toggle('hidden',wbm);$('aWb').classList.toggle('hidden',!wbm);$$('#v-analysis .fvpOnly').forEach(x=>x.classList.toggle('hidden',wbm));$$('#v-analysis .wbOnly').forEach(x=>x.classList.toggle('hidden',!wbm));
   if(wbm){const cs=[...new Set(allPullouts().filter(p=>p.date>=UI.aFrom&&p.date<=UI.aTo&&(!UI.aFarm||p.farm===UI.aFarm)&&UI.aTypes.includes(p.type)).map(custOf))].sort();if(UI.aCust&&!cs.includes(UI.aCust))UI.aCust='';fillSel('aCust',cs,UI.aCust,'All customers');renderWB();return}
-  const D=analysisData(),R=D.rows,F=sum(R,r=>r.fc),A=sum(R,r=>r.ac),E=sum(R,r=>Math.abs(r.fc-r.ac)),acu=acc(F,A,E);
+  const D=analysisData(),R=D.rows,C=R.filter(r=>r.base),F=sum(C,r=>r.fc),A=sum(R,r=>r.ac),AC=sum(C,r=>r.ac),E=sum(C,r=>Math.abs(r.fc-r.ac)),acu=acc(F,AC,E);
   const k=$('aKpis');k.replaceChildren();
-  kpi(k,'Forecast',fmt(F),'heads in period');kpi(k,'Actual pull-out',fmt(A),UI.aTypes.map(t=>(PTYPES.find(p=>p.k===t)||{}).t).join(' + ')||'none ticked');
-  kpi(k,'Variance',sgn(A-F),F?(Math.round((A-F)/F*100))+'% vs forecast':'',Math.abs(A-F)>F*0.15?'warn':'');
-  kpi(k,'Forecast accuracy',acu==null?'—':Math.round(acu*100)+'%','weekly, 1 − |error| ÷ forecast',acu!=null&&acu<0.8?'warn':'');
+  kpi(k,'Forecast',fmt(F),C.length?'heads expected to sell · '+C.length+' wk with a saved forecast':'no saved forecast covers these weeks');
+  kpi(k,'Actual pull-out',fmt(A),(A!==AC?fmt(AC)+' in forecast weeks · ':'')+(UI.aTypes.map(t=>(PTYPES.find(p=>p.k===t)||{}).t).join(' + ')||'none ticked'));
+  kpi(k,'Variance',C.length?sgn(AC-F):'—',C.length&&F?(Math.round((AC-F)/F*100))+'% vs forecast (forecast weeks only)':'',C.length&&Math.abs(AC-F)>F*0.15?'warn':'');
+  kpi(k,'Forecast accuracy',acu==null?'—':Math.round(acu*100)+'%','forecast weeks only · 1 − |error| ÷ forecast',acu!=null&&acu<0.8?'warn':'');
   kpi(k,'Mortality',fmt(sum(R,r=>r.mort)),'heads in period','bad');
+  {const now=standing(pd(todayYmd())-1,UI.aFarm,''),T=pd(todayYmd());const sale=sum(liveModels(UI.aFarm,'',todayYmd()).filter(M=>statusAt(M,T).k==='sale'),M=>M.Ha);
+   k.append(el('div',{class:'kpi',style:'grid-column:1/-1;border-left-color:#9db8d9'},'Live hogs on farm today: '+fmt(sum(now,r=>r.heads))+' hd ('+fmt(sale)+' for sale). That is the standing inventory. "Forecast" here is only the heads the saved forecast expected to be pulled out in the weeks shown, so the two numbers are not the same.'))}
   if(!sl.length)k.append(el('div',{class:'kpi warn',style:'grid-column:1/-1'},'No saved forecasts yet. The app saves one automatically each week when a recorder or admin opens it; you can also press "Save forecast snapshot" on the Forecast tab.'));
   drawAChart(R);
   // weekly table
   const t=$('aWeek');t.replaceChildren();thead(t,['Week','Forecast','Sold','Slaughtered','Consumption','Actual (ticked)','Variance','Accuracy','Mortality','Baseline used'],[1,2,3,4,5,6,7,8]);const tb=el('tbody');
-  R.forEach(r=>{const tr=el('tr'),d=r.ac-r.fc,a=acc(r.fc,r.ac,Math.abs(d));tr.append(el('td',null,'Wk of '+niceY(r.w)),el('td',{class:'n'},fmt(r.fc)),el('td',{class:'n'},fmt(r.byType.SOLD)),el('td',{class:'n'},fmt(r.byType.SLAUGHTERED)),el('td',{class:'n'},fmt(r.byType.CONSUMPTION)),el('td',{class:'n'},fmt(r.ac)),el('td',{class:'n '+(d>0.5?'pos':d<-0.5?'neg':'')},sgn(d)),el('td',{class:'n'},a==null?'—':Math.round(a*100)+'%'),el('td',{class:'n'},fmt(r.mort)),el('td',{class:'hint'},r.base?niceY(pd(r.base.as_of)):'no saved forecast'));tb.append(tr)});
-  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Total'),el('td',{class:'n'},fmt(F)),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SOLD))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SLAUGHTERED))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.CONSUMPTION))),el('td',{class:'n'},fmt(A)),el('td',{class:'n'},sgn(A-F)),el('td',{class:'n'},acu==null?'—':Math.round(acu*100)+'%'),el('td',{class:'n'},fmt(sum(R,r=>r.mort))),el('td'));tb.append(tr);t.append(tb);
+  R.forEach(r=>{const tr=el('tr'),d=r.ac-r.fc,a=acc(r.fc,r.ac,Math.abs(d));tr.append(el('td',null,'Wk of '+niceY(r.w)),el('td',{class:'n'},fmt(r.fc)),el('td',{class:'n'},fmt(r.byType.SOLD)),el('td',{class:'n'},fmt(r.byType.SLAUGHTERED)),el('td',{class:'n'},fmt(r.byType.CONSUMPTION)),el('td',{class:'n'},fmt(r.ac)),el('td',{class:'n '+(d>0.5?'pos':d<-0.5?'neg':'')},sgn(d)),el('td',{class:'n'},a==null?'—':Math.round(a*100)+'%'),el('td',{class:'n'},fmt(r.mort)),el('td',{class:'hint'},r.base?niceY(pd(r.base.as_of)):'not covered — no forecast'));if(!r.base)tr.style.color='#999';tb.append(tr)});
+  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Total'),el('td',{class:'n'},fmt(F)),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SOLD))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SLAUGHTERED))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.CONSUMPTION))),el('td',{class:'n'},fmt(A)),el('td',{class:'n'},C.length?sgn(AC-F):'—'),el('td',{class:'n'},acu==null?'—':Math.round(acu*100)+'%'),el('td',{class:'n'},fmt(sum(R,r=>r.mort))),el('td',{class:'hint'},'variance & accuracy: forecast weeks only'));tb.append(tr);t.append(tb);
   // by band / farm
   const two=(id,keys,fkey,akey,lab)=>{const t=$(id);t.replaceChildren();thead(t,[lab,'Forecast','Actual','Variance','% of forecast'],[1,2,3,4]);const tb=el('tbody');
     keys.forEach(kk=>{const f=sum(R,r=>r[fkey][kk]||0),a=sum(R,r=>r[akey][kk]||0);if(f<0.5&&a<0.5)return;const tr=el('tr'),d=a-f;tr.append(el('td',null,kk),el('td',{class:'n'},fmt(f)),el('td',{class:'n'},fmt(a)),el('td',{class:'n '+(d>0.5?'pos':d<-0.5?'neg':'')},sgn(d)),el('td',{class:'n'},f?Math.round(a/f*100)+'%':'—'));tb.append(tr)});
@@ -1530,9 +1535,17 @@ async function exportAnalysis(){
 function saveSnapshot(kind){
   const rows=snapshotRows();if(!rows.length){if(kind==='manual')toast('Nothing to save — no active buildings.',true);return}
   const wk=ymd(monday(pd(todayYmd())));
-  if(kind==='auto'&&DATA.snapshots.some(s=>s.kind==='auto'&&s.week_key===wk))return;
-  if(kind==='auto'&&QUEUE.some(q=>q.fn==='saveSnapshot'&&q.args.kind==='auto'&&q.args.week_key===wk))return;
-  QUEUE.push({id:uid(),fn:'saveSnapshot',args:{snap_id:uid(),kind,week_key:wk,as_of:todayYmd(),rows},at:new Date().toISOString()});ls.set('queue',QUEUE);renderPend();flush(true);
+  let replace=false;
+  if(kind==='auto'){
+    // This week's auto forecast follows the latest data until the week ends (then it stays frozen for tracing).
+    const sig=rs=>rs.map(r=>r.week_start+'|'+r.farm+'|'+r.band+'|'+Math.round(+r.heads||0)).sort().join(';');
+    const cur=DATA.snapshots.filter(s=>s.kind==='auto'&&s.week_key===wk);
+    const q=QUEUE.filter(x=>x.fn==='saveSnapshot'&&x.args.kind==='auto'&&x.args.week_key===wk);
+    if(q.length){q[q.length-1].args.rows=rows;q[q.length-1].args.as_of=todayYmd();ls.set('queue',QUEUE);return}
+    if(cur.length&&sig(cur)===sig(rows))return;
+    replace=cur.length>0;
+  }
+  QUEUE.push({id:uid(),fn:'saveSnapshot',args:{snap_id:uid(),kind,week_key:wk,as_of:todayYmd(),rows,replace},at:new Date().toISOString()});ls.set('queue',QUEUE);renderPend();flush(true);
   if(kind==='manual')toast('Forecast snapshot saved.');
 }
 
