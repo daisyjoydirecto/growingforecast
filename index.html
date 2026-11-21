@@ -35,7 +35,7 @@ window.HOG_CONFIG = {
   --fs:1;
   --b0:#cfcfcf;--b1:#c5dc7a;--b2:#7ea300;--b3:#3d5600;
   --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948;
-  --fc:#b9b9b9;--ac:#5c8000;
+  --fc:#b9b9b9;--ac:#5c8000;--av:#2a78d6;
   --navh:0px;
 }
 *{box-sizing:border-box}
@@ -534,7 +534,7 @@ table.wbt .sw{display:inline-block;width:11px;height:11px;border-radius:3px;marg
     <div class="kpis" id="aKpis"></div>
     <div class="card">
       <div class="chead"><h2 class="title" style="margin:0">Forecast vs. pull-out by week</h2><button class="btn xl sm noprint" id="xlAnalysis">⬇ Download Excel</button></div>
-      <div class="legend"><span><i style="background:var(--fc)"></i>Forecast (heads)</span><span><i style="background:var(--ac)"></i>Actual pull-out (heads)</span><span>· Weeks run Monday–Sunday</span></div>
+      <div class="legend"><span><i style="background:var(--fc)"></i>Saved forecast</span><span><i style="background:var(--av)"></i>Available — current forecast (this week &amp; later)</span><span><i style="background:var(--ac)"></i>Actual pull-out</span><span>· Weeks run Sunday–Saturday</span></div>
       <div class="chart" id="aChart"><div class="tip" id="aTip"></div></div>
     </div>
     <div class="card"><h2>By week</h2><div class="tablewrap"><table id="aWeek"></table></div></div>
@@ -632,7 +632,9 @@ const ymd=t=>new Date(t).toISOString().slice(0,10);
 const nice=t=>{const d=new Date(t);return MON[d.getUTCMonth()]+' '+d.getUTCDate()};
 const niceY=t=>{if(t==null)return'';const d=new Date(t);return MON[d.getUTCMonth()]+' '+d.getUTCDate()+', '+d.getUTCFullYear()};
 const wkRange=w=>{const a=new Date(w),z=new Date(w+6*DAY);return MON[a.getUTCMonth()]+' '+a.getUTCDate()+'–'+(a.getUTCMonth()===z.getUTCMonth()?'':MON[z.getUTCMonth()]+' ')+z.getUTCDate()};
-const monday=t=>{const d=new Date(t).getUTCDay();return t-((d+6)%7)*DAY};
+// Weeks run Sunday–Saturday (e.g. Nov 1–7). 'monday' kept as the name of the week-start helper.
+const weekStart=t=>{const d=new Date(t).getUTCDay();return t-d*DAY};
+const monday=weekStart;
 const fmt=n=>Math.round(+n||0).toLocaleString('en-US');
 const fmt1=n=>(Math.round((+n||0)*10)/10).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
 const sgn=n=>{const r=Math.round(+n||0);return(r>0?'+':'')+r.toLocaleString('en-US')};
@@ -739,7 +741,7 @@ function apiErr(m){const e=new Error(m==='SESSION_EXPIRED'?'Your session expired
 
 /* ---------- state ---------- */
 const EMPTY=()=>({reports:[],pullouts:[],snapshots:[],breeds:[],farms:[],rules:{}});
-let DATA=Object.assign(EMPTY(),ls.get('cache',{}));
+let DATA=Object.assign(EMPTY(),ls.get('cache',{}));DATA.snapshots=normSnaps(DATA.snapshots);
 let QUEUE=ls.get('queue',[]);
 const UI={view:'report',gran:'week',groupBy:'band',fFarm:'',fBreed:'',asOf:todayYmd(),invDate:null,rFarm:'',pFarm:'',pType:'SOLD',edit:null,recKind:'active',recSearch:'',cmp:'',aFrom:null,aTo:null,aFarm:'',aBand:'',aBase:'rolling',aTypes:['SOLD','SLAUGHTERED','CONSUMPTION'],pBld:'',aMode:'fvp',wbView:'band',wbMode:'hd',aCust:''};
 let FS=ls.get('fs',1);document.documentElement.style.setProperty('--fs',FS);
@@ -803,11 +805,12 @@ function standing(t,farm,breed){
     const sh=bandShares(s.mean,s.sd);BANDS.forEach((bd,i)=>{const x=h*sh[i];if(x>0)out.push({band:bd.k,breed:b.breed,farm:b.farm,age:ageKey(s.age),ageDays:s.age,heads:x,kg:x*s.mean})})});
   return out;
 }
-function snapshotRows(){ // weekly (Monday) forecast for all farms from today, 13 weeks
+function snapshotRows(){ // weekly (Sun–Sat) forecast for all farms from today, 13 weeks
   const asOf=todayYmd(),a0=monday(pd(asOf)),end=a0+13*7*DAY,agg=new Map();
   lotRows(liveModels('','',asOf)).forEach(r=>{if(r.t>=end)return;const w=ymd(monday(r.t)),k=w+'|'+r.farm+'|'+r.band;const c=agg.get(k)||{week_start:w,farm:r.farm,band:r.band,heads:0,kg:0};c.heads+=r.heads;c.kg+=r.kg;agg.set(k,c)});
   return[...agg.values()].map(c=>({week_start:c.week_start,farm:c.farm,band:c.band,heads:Math.round(c.heads*10)/10,kg:Math.round(c.kg)}));
 }
+function normSnaps(list){return(list||[]).map(r=>Object.assign({},r,{week_start:r.week_start?ymd(monday(pd(r.week_start))):r.week_start,week_key:r.week_key?ymd(monday(pd(r.week_key))):r.week_key}))}
 function snapList(){const m=new Map();DATA.snapshots.forEach(s=>{if(!m.has(s.snap_id))m.set(s.snap_id,{id:s.snap_id,taken_at:s.taken_at,as_of:s.as_of,kind:s.kind,by:s.username,week_key:s.week_key,rows:[]});m.get(s.snap_id).rows.push(s)});return[...m.values()].sort((a,b)=>String(b.taken_at).localeCompare(String(a.taken_at)))}
 const snapLabel=s=>niceY(pd(s.as_of))+' · '+(s.kind==='auto'?'weekly auto':'saved')+(s.by?' by '+s.by:'');
 function groupKeys(dim,rows){if(dim==='band')return BANDS.map(b=>b.k);if(dim==='age')return AGES.map(a=>a.k);const base=dim==='breed'?breedNames():farmNames();return base.concat([...new Set(rows.map(r=>r[dim]))].filter(k=>!base.includes(k)))}
@@ -1278,6 +1281,9 @@ function analysisData(){
   const bandOk=b=>!UI.aBand||b===UI.aBand,farmOk=f=>!UI.aFarm||f===UI.aFarm;
   const farms=new Set(),rows=[];
   const pulls=allPullouts().filter(p=>farmOk(p.farm)&&pd(p.date)>=from&&pd(p.date)<=to);
+  // forecasted availability from the CURRENT data (this week and later)
+  const thisWk=monday(pd(todayYmd())),avW={};
+  lotRows(liveModels(UI.aFarm,'',todayYmd())).forEach(r=>{if(!bandOk(r.band))return;const w=monday(r.t);avW[w]=(avW[w]||0)+r.heads});
   weeks.forEach(w=>{
     let base=fixed;if(!fixed){for(const s of snaps){if(pd(s.as_of)<=w)base=s}}
     const wk=ymd(w);
@@ -1290,34 +1296,35 @@ function analysisData(){
     pw.filter(p=>UI.aTypes.includes(p.type)).forEach(p=>{farms.add(p.farm);aByFarm[p.farm]=(aByFarm[p.farm]||0)+bandHeads(p,UI.aBand);BANDS.forEach(b=>{if(bandOk(b.k))aByBand[b.k]=(aByBand[b.k]||0)+(+p[b.f]||0)})});
     const mort=sum(pw.filter(p=>p.type==='MORTALITY'),p=>bandHeads(p,UI.aBand));
     const byType={};PTYPES.forEach(t=>byType[t.k]=sum(pw.filter(p=>p.type===t.k),p=>bandHeads(p,UI.aBand)));
-    rows.push({w,base,fc:sum(Object.values(fByFarm)),ac:sum(Object.values(aByFarm)),mort,byType,fByFarm,aByFarm,fByBand,aByBand});
+    rows.push({w,base,av:w>=thisWk?(avW[w]||0):null,fc:sum(Object.values(fByFarm)),ac:sum(Object.values(aByFarm)),mort,byType,fByFarm,aByFarm,fByBand,aByBand});
   });
   return{weeks,rows,farms:[...farms].sort()};
 }
 const acc=(F,A,absErr)=>F>0?Math.max(0,1-absErr/F):null;
 function renderAnalysis(){
-  if(!UI.aTo)UI.aTo=todayYmd();if(!UI.aFrom)UI.aFrom=ymd(monday(pd(todayYmd()))-7*7*DAY);
+  if(!UI.aTo)UI.aTo=ymd(monday(pd(todayYmd()))+5*7*DAY-DAY);if(!UI.aFrom)UI.aFrom=ymd(monday(pd(todayYmd()))-7*7*DAY);
   $('aFrom').value=UI.aFrom;$('aTo').value=UI.aTo;
   fillSel('aFarm',farmNames(),UI.aFarm);fillSel('aBand',BANDS.map(b=>({v:b.k,t:b.k+' kg'})),UI.aBand,'All weight categories');
   const sl=snapList();fillSel('aBase',[{v:'rolling',t:'Rolling — latest saved forecast before each week'}].concat(sl.map(s=>({v:s.id,t:'Fixed: '+snapLabel(s)}))),UI.aBase,null);
   const ty=$('aTypes');if(ty.children.length<2){PTYPES.forEach(p=>{const l=el('label'),c=el('input',{type:'checkbox',value:p.k});c.checked=UI.aTypes.includes(p.k);c.onchange=()=>{UI.aTypes=$$('#aTypes input:checked').map(x=>x.value);renderAnalysis()};l.append(c,document.createTextNode(p.t));ty.append(l)})}
   const wbm=UI.aMode==='wb';$$('#aMode button').forEach(b=>b.classList.toggle('on',b.dataset.a===UI.aMode));$('aFvp').classList.toggle('hidden',wbm);$('aWb').classList.toggle('hidden',!wbm);$$('#v-analysis .fvpOnly').forEach(x=>x.classList.toggle('hidden',wbm));$$('#v-analysis .wbOnly').forEach(x=>x.classList.toggle('hidden',!wbm));
   if(wbm){const cs=[...new Set(allPullouts().filter(p=>p.date>=UI.aFrom&&p.date<=UI.aTo&&(!UI.aFarm||p.farm===UI.aFarm)&&UI.aTypes.includes(p.type)).map(custOf))].sort();if(UI.aCust&&!cs.includes(UI.aCust))UI.aCust='';fillSel('aCust',cs,UI.aCust,'All customers');renderWB();return}
-  const D=analysisData(),R=D.rows,C=R.filter(r=>r.base),F=sum(C,r=>r.fc),A=sum(R,r=>r.ac),AC=sum(C,r=>r.ac),E=sum(C,r=>Math.abs(r.fc-r.ac)),acu=acc(F,AC,E);
+  const TW=monday(pd(todayYmd())),D=analysisData(),R=D.rows,C=R.filter(r=>r.base&&r.w<=TW),F=sum(C,r=>r.fc),A=sum(R,r=>r.ac),AC=sum(C,r=>r.ac),E=sum(C,r=>Math.abs(r.fc-r.ac)),acu=acc(F,AC,E);
   const k=$('aKpis');k.replaceChildren();
-  kpi(k,'Forecast',fmt(F),C.length?'heads expected to sell · '+C.length+' wk with a saved forecast':'no saved forecast covers these weeks');
+  kpi(k,'Saved forecast to date',fmt(F),C.length?'heads expected to sell · '+C.length+' wk up to this week':'no saved forecast covers these weeks');
   kpi(k,'Actual pull-out',fmt(A),(A!==AC?fmt(AC)+' in forecast weeks · ':'')+(UI.aTypes.map(t=>(PTYPES.find(p=>p.k===t)||{}).t).join(' + ')||'none ticked'));
   kpi(k,'Variance',C.length?sgn(AC-F):'—',C.length&&F?(Math.round((AC-F)/F*100))+'% vs forecast (forecast weeks only)':'',C.length&&Math.abs(AC-F)>F*0.15?'warn':'');
   kpi(k,'Forecast accuracy',acu==null?'—':Math.round(acu*100)+'%','forecast weeks only · 1 − |error| ÷ forecast',acu!=null&&acu<0.8?'warn':'');
   kpi(k,'Mortality',fmt(sum(R,r=>r.mort)),'heads in period','bad');
+  {const AV=R.filter(r=>r.av!=null),cur=AV[0];kpi(k,'Available (current forecast)',AV.length?fmt(sum(AV,r=>r.av)):'—',AV.length?(cur&&cur.w===monday(pd(todayYmd()))?'this week '+fmt(cur.av)+' · ':'')+AV.length+' wk to '+niceY(AV[AV.length-1].w+6*DAY):'set "To" to this week or later')}
   {const now=standing(pd(todayYmd())-1,UI.aFarm,''),T=pd(todayYmd());const sale=sum(liveModels(UI.aFarm,'',todayYmd()).filter(M=>statusAt(M,T).k==='sale'),M=>M.Ha);
    k.append(el('div',{class:'kpi',style:'grid-column:1/-1;border-left-color:#9db8d9'},'Live hogs on farm today: '+fmt(sum(now,r=>r.heads))+' hd ('+fmt(sale)+' for sale). That is the standing inventory. "Forecast" here is only the heads the saved forecast expected to be pulled out in the weeks shown, so the two numbers are not the same.'))}
   if(!sl.length)k.append(el('div',{class:'kpi warn',style:'grid-column:1/-1'},'No saved forecasts yet. The app saves one automatically each week when a recorder or admin opens it; you can also press "Save forecast snapshot" on the Forecast tab.'));
   drawAChart(R);
   // weekly table
-  const t=$('aWeek');t.replaceChildren();thead(t,['Week','Forecast','Sold','Slaughtered','Consumption','Actual (ticked)','Variance','Accuracy','Mortality','Baseline used'],[1,2,3,4,5,6,7,8]);const tb=el('tbody');
-  R.forEach(r=>{const tr=el('tr'),d=r.ac-r.fc,a=acc(r.fc,r.ac,Math.abs(d));tr.append(el('td',null,wkRange(r.w)+', '+new Date(r.w).getUTCFullYear()),el('td',{class:'n'},fmt(r.fc)),el('td',{class:'n'},fmt(r.byType.SOLD)),el('td',{class:'n'},fmt(r.byType.SLAUGHTERED)),el('td',{class:'n'},fmt(r.byType.CONSUMPTION)),el('td',{class:'n'},fmt(r.ac)),el('td',{class:'n '+(d>0.5?'pos':d<-0.5?'neg':'')},sgn(d)),el('td',{class:'n'},a==null?'—':Math.round(a*100)+'%'),el('td',{class:'n'},fmt(r.mort)),el('td',{class:'hint'},r.base?niceY(pd(r.base.as_of)):'not covered — no forecast'));if(!r.base)tr.style.color='#999';tb.append(tr)});
-  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Total'),el('td',{class:'n'},fmt(F)),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SOLD))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SLAUGHTERED))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.CONSUMPTION))),el('td',{class:'n'},fmt(A)),el('td',{class:'n'},C.length?sgn(AC-F):'—'),el('td',{class:'n'},acu==null?'—':Math.round(acu*100)+'%'),el('td',{class:'n'},fmt(sum(R,r=>r.mort))),el('td',{class:'hint'},'variance & accuracy: forecast weeks only'));tb.append(tr);t.append(tb);
+  const t=$('aWeek');t.replaceChildren();thead(t,['Week','Saved forecast','Available (current)','Sold','Slaughtered','Consumption','Actual (ticked)','Variance','Accuracy','Mortality','Baseline used'],[1,2,3,4,5,6,7,8,9]);const tb=el('tbody');
+  R.forEach(r=>{const tr=el('tr'),fut=r.w>TW,d=fut?null:r.ac-r.fc,a=fut?null:acc(r.fc,r.ac,Math.abs(d));tr.append(el('td',null,wkRange(r.w)+', '+new Date(r.w).getUTCFullYear()),el('td',{class:'n'},fmt(r.fc)),el('td',{class:'n'},r.av==null?'–':fmt(r.av)),el('td',{class:'n'},fmt(r.byType.SOLD)),el('td',{class:'n'},fmt(r.byType.SLAUGHTERED)),el('td',{class:'n'},fmt(r.byType.CONSUMPTION)),el('td',{class:'n'},fmt(r.ac)),el('td',{class:'n '+(d>0.5?'pos':d<-0.5?'neg':'')},d==null?'upcoming':sgn(d)),el('td',{class:'n'},a==null?'—':Math.round(a*100)+'%'),el('td',{class:'n'},fmt(r.mort)),el('td',{class:'hint'},r.base?niceY(pd(r.base.as_of)):'not covered — no forecast'));if(!r.base)tr.style.color='#999';tb.append(tr)});
+  const tr=el('tr',{class:'tot'});tr.append(el('td',null,'Total'),el('td',{class:'n'},fmt(F)),el('td',{class:'n'},fmt(sum(R.filter(r=>r.av!=null),r=>r.av))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SOLD))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.SLAUGHTERED))),el('td',{class:'n'},fmt(sum(R,r=>r.byType.CONSUMPTION))),el('td',{class:'n'},fmt(A)),el('td',{class:'n'},C.length?sgn(AC-F):'—'),el('td',{class:'n'},acu==null?'—':Math.round(acu*100)+'%'),el('td',{class:'n'},fmt(sum(R,r=>r.mort))),el('td',{class:'hint'},'variance & accuracy: forecast weeks only'));tb.append(tr);t.append(tb);
   // by band / farm
   const two=(id,keys,fkey,akey,lab)=>{const t=$(id);t.replaceChildren();thead(t,[lab,'Forecast','Actual','Variance','% of forecast'],[1,2,3,4]);const tb=el('tbody');
     keys.forEach(kk=>{const f=sum(R,r=>r[fkey][kk]||0),a=sum(R,r=>r[akey][kk]||0);if(f<0.5&&a<0.5)return;const tr=el('tr'),d=a-f;tr.append(el('td',null,kk),el('td',{class:'n'},fmt(f)),el('td',{class:'n'},fmt(a)),el('td',{class:'n '+(d>0.5?'pos':d<-0.5?'neg':'')},sgn(d)),el('td',{class:'n'},f?Math.round(a/f*100)+'%':'—'));tb.append(tr)});
@@ -1328,15 +1335,15 @@ function renderAnalysis(){
 function drawAChart(R){
   const box=$('aChart'),tip=$('aTip');[...box.querySelectorAll('svg')].forEach(n=>n.remove());
   const W=Math.max(280,box.clientWidth),narrow=W<520,H=narrow?230:270,ml=40,mr=6,mt=12,mb=28,iw=W-ml-mr,ih=H-mt-mb;
-  const max=Math.max(10,...R.map(r=>Math.max(r.fc,r.ac))),step=niceStep(max/4),ymax=Math.ceil(max/step)*step;
+  const max=Math.max(10,...R.map(r=>Math.max(r.fc,r.ac,r.av||0))),step=niceStep(max/4),ymax=Math.ceil(max/step)*step;
   const NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('role','img');svg.setAttribute('aria-label','Forecast vs pull-out by week');
   const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
   for(let v=0;v<=ymax+1e-9;v+=step){const y=mt+ih-v/ymax*ih;svg.append(mk('line',{x1:ml,x2:W-mr,y1:y,y2:y,stroke:'#ececec'}));const t=mk('text',{x:ml-6,y:y+4,'text-anchor':'end','font-size':11,fill:'#999'});t.textContent=fmt(v);svg.append(t)}
-  const n=Math.max(1,R.length),bw=iw/n,gw=Math.min(60,bw*0.72),one=(gw-2)/2,skip=n>8&&narrow?2:1;
-  R.forEach((r,i)=>{const x=ml+i*bw+(bw-gw)/2;[[r.fc,cssv('--fc')],[r.ac,cssv('--ac')]].forEach(([v,c],j)=>{const h=v/ymax*ih;if(h>0)svg.append(mk('path',{d:segPath(x+j*(one+2),mt+ih-h,one,h,3),fill:c}))});
+  const n=Math.max(1,R.length),bw=iw/n,gw=Math.min(84,bw*0.8),one=(gw-4)/3,skip=n>8&&narrow?2:1;
+  R.forEach((r,i)=>{const x=ml+i*bw+(bw-gw)/2;[[r.fc,cssv('--fc')],[r.av||0,cssv('--av')],[r.ac,cssv('--ac')]].forEach(([v,c],j)=>{const h=v/ymax*ih;if(h>0)svg.append(mk('path',{d:segPath(x+j*(one+2),mt+ih-h,one,h,3),fill:c}))});
     if(i%skip===0){const t=mk('text',{x:ml+i*bw+bw/2,y:H-mb+16,'text-anchor':'middle','font-size':narrow?9.5:11,fill:'#666'});t.textContent=wkRange(r.w);svg.append(t)}
     const hit=mk('rect',{x:ml+i*bw,y:mt,width:bw,height:ih,fill:'transparent'});
-    const show=ev=>{tip.replaceChildren(el('b',null,'Week '+wkRange(r.w)+', '+new Date(r.w).getUTCFullYear()));[['Forecast',r.fc],['Actual pull-out',r.ac],['Variance',r.ac-r.fc],['Mortality',r.mort]].forEach(([l,v],j)=>{const d=el('div',{class:'r'});d.append(el('span',null,l),el('span',null,(j===2?sgn(v):fmt(v))+' hd'));tip.append(d)});
+    const show=ev=>{tip.replaceChildren(el('b',null,'Week '+wkRange(r.w)+', '+new Date(r.w).getUTCFullYear()));[['Saved forecast',r.fc],['Available (current forecast)',r.av],['Actual pull-out',r.ac],['Variance vs saved',r.ac-r.fc],['Mortality',r.mort]].forEach(([l,v],j)=>{if(v==null)return;const d=el('div',{class:'r'});d.append(el('span',null,l),el('span',null,(j===3?sgn(v):fmt(v))+' hd'));tip.append(d)});
       tip.append(el('div',{class:'hint'},r.base?'Baseline: '+niceY(pd(r.base.as_of)):'No saved forecast for this week'));
       tip.style.display='block';const bx=box.getBoundingClientRect(),cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-bx.left,cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-bx.top;let lx=cx+14;if(lx+200>bx.width)lx=cx-210;tip.style.left=Math.max(0,lx)+'px';tip.style.top=Math.max(0,cy-30)+'px'};
     hit.addEventListener('mousemove',show);hit.addEventListener('click',show);hit.addEventListener('mouseleave',()=>tip.style.display='none');svg.append(hit)});
@@ -1521,8 +1528,8 @@ async function exportAnalysis(){
   const btn=$('xlAnalysis');btn.disabled=true;
   try{await loadXLSX();const wb=XLSX.utils.book_new(),D=analysisData(),R=D.rows;
     const head=[['Forecast vs. Pull-out Analysis'],[UI.aFrom+' to '+UI.aTo+' · Farm: '+(UI.aFarm||'All')+' · Weight: '+(UI.aBand||'All')+' · Actual = '+UI.aTypes.join(' + ')],['Baseline: '+(UI.aBase==='rolling'?'latest saved forecast before each week':'fixed snapshot')+' · generated '+new Date().toLocaleString()],[]];
-    const wk=[['Week (Mon–Sun)','Week starting','Forecast','Sold','Slaughtered','Consumption','Actual (counted)','Variance','Accuracy %','Mortality','Baseline (saved on)']];
-    R.forEach(r=>{const a=acc(r.fc,r.ac,Math.abs(r.ac-r.fc));wk.push([wkRange(r.w),ymd(r.w),r1(r.fc),r.byType.SOLD,r.byType.SLAUGHTERED,r.byType.CONSUMPTION,r.ac,r1(r.ac-r.fc),a==null?'':Math.round(a*100),r.mort,r.base?r.base.as_of:''])});
+    const wk=[['Week (Sun–Sat)','Week starting','Saved forecast','Available (current forecast)','Sold','Slaughtered','Consumption','Actual (counted)','Variance','Accuracy %','Mortality','Baseline (saved on)']];
+    R.forEach(r=>{const a=acc(r.fc,r.ac,Math.abs(r.ac-r.fc));wk.push([wkRange(r.w),ymd(r.w),r1(r.fc),r.av==null?'':Math.round(r.av),r.byType.SOLD,r.byType.SLAUGHTERED,r.byType.CONSUMPTION,r.ac,r1(r.ac-r.fc),a==null?'':Math.round(a*100),r.mort,r.base?r.base.as_of:''])});
     addSheet(wb,'By Week',head.concat(wk),[14,10,8,12,12,14,10,11,10,18]);
     const two=(keys,fk,ak,lab)=>{const o=[[lab,'Forecast','Actual','Variance','% of forecast']];keys.forEach(k=>{const f=sum(R,r=>r[fk][k]||0),a=sum(R,r=>r[ak][k]||0);o.push([k,r1(f),a,r1(a-f),f?Math.round(a/f*100):''])});return o};
     addSheet(wb,'By Weight Category',head.concat(two(BANDS.map(b=>b.k).filter(b=>!UI.aBand||b===UI.aBand),'fByBand','aByBand','Weight category')),[16,10,10,10,12]);
@@ -1567,7 +1574,7 @@ async function flush(quiet){
 }
 async function load(silent){
   const b=$('btnSync');b.disabled=true;b.replaceChildren(el('span',{class:'spin'}),document.createTextNode(' Syncing'));
-  try{const r=await api('data',{});DATA={reports:r.reports||[],pullouts:r.pullouts||[],snapshots:r.snapshots||[],breeds:r.breeds||[],farms:r.farms||[],rules:r.rules||{}};ls.set('cache',DATA);ls.set('cacheAt',Date.now());
+  try{const r=await api('data',{});DATA={reports:r.reports||[],pullouts:r.pullouts||[],snapshots:normSnaps(r.snapshots),breeds:r.breeds||[],farms:r.farms||[],rules:r.rules||{}};ls.set('cache',DATA);ls.set('cacheAt',Date.now());
     if(r.user){SESSION.user=r.user;ls.set('session',SESSION)}
     renderShell();renderView();if(!silent)toast('Up to date ✓');
     if(canEnter())saveSnapshot('auto');}
